@@ -46,7 +46,7 @@ function deps(): RetryDeps {
     },
     makeThumbnail: async (id, file) => {
       const source = groupPaths.articleFile(id, file);
-      const ref = await ImageManipulator.manipulate(source.uri).resize({ width: 168 }).renderAsync();
+      const ref = await ImageManipulator.manipulate(source.uri).resize({ width: 600 }).renderAsync();
       const saved = await ref.saveAsync({ compress: 0.8, format: SaveFormat.JPEG });
       const thumb = groupPaths.articleFile(id, 'thumb.jpg');
       if (thumb.exists) thumb.delete();

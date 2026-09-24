@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 /// full-size images (memory budget P2); the thumbnail uses ImageIO downsampling.
 enum ImageFetcher {
   static let maxConcurrent = 6
-  static let thumbMaxPixels = 168  // 56pt @3x
+  static let thumbMaxPixels = 600  // book cover in the shelf grid (~180pt @3x)
 
   private static let session: URLSession = {
     let config = URLSessionConfiguration.ephemeral

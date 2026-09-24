@@ -1,4 +1,4 @@
-import { Link, router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 import Animated, { FadeOut, useSharedValue } from 'react-native-reanimated';
@@ -114,8 +114,7 @@ export function ReaderScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: tone.background }]}>
-      <Link.AppleZoomTarget>
-        <View style={StyleSheet.absoluteFill}>
+      <View style={StyleSheet.absoluteFill}>
           {prepared.kind === 'linkOnly' ? (
             <LinkOnlyState article={article} />
           ) : (
@@ -150,8 +149,7 @@ export function ReaderScreen() {
               </T>
             </Animated.View>
           )}
-        </View>
-      </Link.AppleZoomTarget>
+      </View>
       <ProgressHairline progress={progress} top={insets.top} />
       <ReaderChrome
         visible={chromeVisible}

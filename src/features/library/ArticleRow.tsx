@@ -1,18 +1,16 @@
-import { Image } from 'expo-image';
-import { Link } from 'expo-router';
-import { memo, useEffect, useMemo } from 'react';
+import { router } from 'expo-router';
+import { memo, useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 
 import type { Article } from '../../data/article';
-import { groupPaths } from '../../data/sharedContainer';
-import { DateChip } from '../../design/components/DateChip';
-import { Doodle } from '../../design/doodles/Doodle';
-import { doodleAt } from '../../design/doodles/registry';
 import { useMotionMode } from '../../design/motion';
-import { colors, inset, radius, size, space } from '../../design/tokens';
-import { mark } from '../../perf';
+import { colors, inset, space } from '../../design/tokens';
 import { T } from '../../design/typography';
+import { mark } from '../../perf';
+import { showArticleActions } from './articleActions';
+import { BookCover } from './BookCover';
+import { tiltFor } from './coverStyle';
 import { rowMeta } from './selectors';
 
 type Props = {
@@ -22,61 +20,50 @@ type Props = {
   onArrived: (id: string) => void;
 };
 
-/** Memoised on id + updatedAt (+ arrival/now bucket) so unrelated row changes never re-render it (P4). */
+const COVER_WIDTH = 48;
+
+/** List view row: a small tilted book, serif title, mono meta. Memoised so unrelated rows never re-render (P4). */
 export const ArticleRow = memo(
   function ArticleRow({ article, isNew, now, onArrived }: Props) {
     const mode = useMotionMode();
-    const doodle = doodleAt(article.doodle);
-    const thumb = useMemo(
-      () => (article.hasThumb ? groupPaths.articleFile(article.id, 'thumb.jpg').uri : null),
-      [article.hasThumb, article.id],
-    );
     useEffect(() => {
       if (isNew) onArrived(article.id);
     }, [isNew, article.id, onArrived]);
 
-    const unread = article.readAt === null;
+    const tilt = mode === 'full' ? tiltFor(article.id, 0) * 0.8 : 0;
+    const open = () => {
+      mark('open-article-tap');
+      router.push({ pathname: '/article/[id]', params: { id: article.id } });
+    };
+
     return (
       <Animated.View
         entering={isNew ? (mode === 'full' ? FadeIn.springify() : FadeIn) : undefined}
         layout={mode === 'full' ? LinearTransition.springify() : undefined}
       >
-        <Link href={{ pathname: '/article/[id]', params: { id: article.id } }} asChild>
-          <Pressable
-            onPressIn={() => mark('open-article-tap')}
-            style={({ pressed }) => [styles.row, pressed && styles.pressed]}
-            accessibilityRole="button"
-            accessibilityLabel={`${article.title}. ${rowMeta(article, now)}${unread ? '. unread' : ''}`}
-          >
-            <Link.AppleZoom>
-              <View style={styles.inner}>
-                <View style={styles.stampCol}>
-                  {unread && <View style={styles.unreadDot} />}
-                  <Doodle doodle={doodle} size={size.doodleStamp} drawOn={isNew} delayMs={120} />
-                </View>
-                <View style={styles.text}>
-                  <T variant="rowTitle" numberOfLines={2}>
-                    {article.title}
-                  </T>
-                  <T variant="monoXs" color={colors.textMuted} numberOfLines={1}>
-                    {rowMeta(article, now)}
-                  </T>
-                  {article.status === 'link_only' && <DateChip label="needs internet" tone="faint" />}
-                </View>
-                {thumb ? (
-                  <Image
-                    source={{ uri: thumb }}
-                    style={styles.thumb}
-                    contentFit="cover"
-                    recyclingKey={article.id}
-                    transition={120}
-                  />
-                ) : null}
-                {article.status === 'partial' && <View style={styles.partialRing} accessibilityLabel="images still downloading" />}
-              </View>
-            </Link.AppleZoom>
-          </Pressable>
-        </Link>
+        <Pressable
+          onPress={open}
+          onLongPress={() => showArticleActions(article)}
+          delayLongPress={320}
+          style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+          accessibilityRole="button"
+          accessibilityLabel={`${article.title}. ${rowMeta(article, now)}${article.readAt === null ? '. unread' : ''}`}
+          accessibilityHint="opens the article. long press for more."
+        >
+          <View style={styles.inner}>
+            <View style={[styles.cover, { transform: [{ rotate: `${tilt}deg` }] }]}>
+              <BookCover article={article} width={COVER_WIDTH} drawOn={isNew} />
+            </View>
+            <View style={styles.text}>
+              <T variant="rowTitle" numberOfLines={2}>
+                {article.title}
+              </T>
+              <T variant="monoXs" color={colors.textMuted} numberOfLines={1}>
+                {rowMeta(article, now)}
+              </T>
+            </View>
+          </View>
+        </Pressable>
       </Animated.View>
     );
   },
@@ -94,30 +81,14 @@ const styles = StyleSheet.create({
   inner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.x3,
+    gap: space.x4,
     paddingVertical: space.x4,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.hairline,
+    borderBottomColor: 'rgba(0,0,0,0.08)',
   },
-  stampCol: { width: 28, alignItems: 'center', justifyContent: 'center' },
-  unreadDot: {
-    position: 'absolute',
-    left: -14,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: colors.ink,
+  cover: {
+    boxShadow: '0 6px 10px -4px rgba(20,10,80,0.3), 0 1px 3px rgba(20,10,80,0.12)',
+    borderRadius: 4,
   },
   text: { flex: 1, gap: 6 },
-  thumb: { width: size.thumb, height: size.thumb, borderRadius: radius.chip, backgroundColor: colors.inkWash },
-  partialRing: {
-    position: 'absolute',
-    right: 0,
-    top: space.x4,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: colors.ink,
-  },
 });

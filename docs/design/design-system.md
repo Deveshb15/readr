@@ -126,8 +126,9 @@ Measure: 62–68 characters. Reader side margins are 24pt, capped to that width 
 | **PillToggle** | one year doodle segmented control | Frosted container. The selected segment is ink-filled with a white doodle, the other is `ink-faint`. The selection slides on a spring. |
 | **FrostedCard** | one year widget cards | `surface` plus blur, 24 radius, 16 padding, meta row in mono at top ("#42 · wednesday · 02.11"). |
 | **TiltedCard** | one year onboarding compose card | Rotated −4°. Settles to −2° on appear with a spring. Onboarding and save-card preview only. |
-| **ArticleRow** | Pocket / NYT / Atlantic | Doodle stamp (24) · serif title (2 lines) · mono meta "site · 9 min · saved 2h ago" · optional 56pt square thumbnail on the right. An ink dot appears at the left edge for unread items. |
-| **ShelfStrip** (library header) | one year dot-grid year | A single row of dots, one per saved article this month. Read items become their doodle and unread stay dots. Header chip: "september · **12** saved". |
+| **BookCover** | Apple Books / Apple News covers | 2:3 cover: lead image, or a typographic cover (palette by doodle, Instrument Serif title, doodle). Spine gradient, two page sheets peeking right, gloss sheen, ink ribbon while unread. |
+| **Shelf** (library default) | Apple Books grid + real bookshelves | Two books per plank, tilted outward ±0.8–2.6° (deterministic per article). Press straightens + lifts. Arrivals drop onto the shelf. Title/meta below the plank. Long-press → actions. |
+| **ArticleRow** (list view) | Pocket / NYT | 48pt tilted mini cover · serif title · mono meta. Swipe to delete, long-press actions. |
 | **ReaderChrome** | Atoms / Pocket | Floating frosted pill with back and "aa". It hides on scroll-down and returns on scroll-up. A 2pt ink progress hairline sits at the top. |
 | **ReaderSettingsSheet** | Fable / Matter / Substack | Three paper tones (paper `#F6F5F2`, white `#FFFFFF`, canvas `#E8E8EA`), font trio (serif / sans / mono), size stepper, width toggle. All light. |
 | **SaveCard** (share extension) | one year compose card + TiltedCard | `surface-solid` card with the doodle stamp drawing on, the title in Instrument Serif Italic, mono meta, and a chip that goes from "saving…" to "saved for later". Auto-dismisses. Faded "undo" link. |
