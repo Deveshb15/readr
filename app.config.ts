@@ -4,7 +4,7 @@ export const BUNDLE_ID = 'com.devesh.readr';
 export const APP_GROUP = 'group.com.devesh.readr';
 
 const config: ExpoConfig = {
-  name: 'readr',
+  name: 'Readr',
   slug: 'readr',
   scheme: 'readr',
   version: '1.0.0',

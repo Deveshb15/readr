@@ -17,7 +17,7 @@ import { springs, useMotionMode } from '../../design/motion';
 import { colors, radius, space } from '../../design/tokens';
 import { T } from '../../design/typography';
 
-const APPS = ['airdrop', 'messages', 'mail', 'readr', 'notes'] as const;
+const APPS = ['airdrop', 'messages', 'mail', 'Readr', 'notes'] as const;
 
 /** A drawn share sheet (one year's widget-onboarding pattern): readr's icon lifts and pulses in ink. */
 export function PhoneMock() {
@@ -48,7 +48,7 @@ export function PhoneMock() {
         </T>
         <View style={styles.apps}>
           {APPS.map((app) => {
-            const isReadr = app === 'readr';
+            const isReadr = app === 'Readr';
             const icon = (
               <View style={[styles.icon, isReadr && styles.readrIcon]}>
                 {isReadr && <Doodle doodle={doodleNamed('book') ?? doodles[0]} size={26} color={colors.white} />}

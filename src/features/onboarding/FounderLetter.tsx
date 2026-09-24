@@ -25,7 +25,7 @@ export function FounderLetter() {
         <Doodle doodle={doodleNamed('window-seat') ?? doodles[0]} size={40} drawOn />
         <T variant="monoMd" style={styles.center}>hey friend</T>
         <T variant="monoMd" style={styles.center}>
-          readr keeps the things you meant to read — the whole thing, pictures and all — right on your phone.
+          Readr keeps the things you meant to read — the whole thing, pictures and all — right on your phone.
         </T>
         <T variant="monoMd" style={styles.center}>
           so the next time the wifi gives up at{' '}
@@ -35,7 +35,7 @@ export function FounderLetter() {
           , your reading doesn't.
         </T>
         <T variant="monoMd" style={styles.center}>love,</T>
-        <Svg width={140} height={48} viewBox="0 0 140 48" accessibilityLabel="signed, readr">
+        <Svg width={140} height={48} viewBox="0 0 140 48" accessibilityLabel="signed, Readr">
           <Path
             d="M8 34 C14 10 22 10 20 30 C19 40 28 18 34 24 C38 28 36 34 42 30 C48 26 46 20 52 22 C58 24 54 34 60 32 C68 28 64 14 72 18 C80 22 74 36 82 32 C90 28 88 22 96 24 C104 26 100 36 110 30 C118 26 124 20 132 22"
             stroke={colors.ink}

@@ -2,7 +2,7 @@
 module.exports = (config) => ({
   type: 'share',
   name: 'ReadrShare',
-  displayName: 'readr',
+  displayName: 'Readr',
   icon: '../../assets/icon.png',
   deploymentTarget: '18.0',
   frameworks: ['SwiftUI', 'WebKit', 'JavaScriptCore', 'ImageIO', 'UniformTypeIdentifiers'],

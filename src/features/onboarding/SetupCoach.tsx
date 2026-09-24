@@ -61,7 +61,7 @@ export function SetupCoach() {
             <T variant="monoLg" color={colors.ink}>
               anywhere
             </T>
-            . tap readr in the share sheet.
+            . tap Readr in the share sheet.
           </T>
         )}
       </View>
@@ -75,7 +75,7 @@ export function SetupCoach() {
                 <View style={{ flex: 1, gap: 4 }}>
                   <T variant="rowTitle">{practice.title}</T>
                   <T variant="monoXs" color={colors.textMuted}>
-                    readr · 1 min · saved just now
+                    Readr · 1 min · saved just now
                   </T>
                 </View>
               </View>
@@ -93,7 +93,7 @@ export function SetupCoach() {
         )}
         {phase === 'not_saved' && (
           <T variant="monoSm" color={colors.textMuted} style={styles.center}>
-            didn't see readr? scroll the app row to the end, tap “more”, and add readr to your favourites.
+            didn't see Readr? scroll the app row to the end, tap “more”, and add Readr to your favourites.
           </T>
         )}
       </View>

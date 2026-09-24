@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -42,24 +41,10 @@ export const BookCover = memo(function BookCover({ article, width, drawOn = fals
           <TypeCover article={article} palette={palette} drawOn={drawOn} />
         )}
 
-        {/* Spine: a dark fold near the left edge, then a soft highlight. */}
-        <LinearGradient
-          colors={['rgba(0,0,0,0.28)', 'rgba(0,0,0,0.06)', 'rgba(255,255,255,0.18)', 'rgba(255,255,255,0)']}
-          locations={[0, 0.35, 0.55, 1]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={[styles.spine, { width: Math.max(10, width * 0.09) }]}
-          pointerEvents="none"
-        />
+        {/* Spine: a dark fold near the left edge, then a soft highlight. Native CSS gradients (RN 0.86). */}
+        <View pointerEvents="none" style={[styles.spine, { width: Math.max(10, width * 0.09) }]} />
         {/* Gloss: a faint diagonal sheen across the cover. */}
-        <LinearGradient
-          colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0)', 'rgba(0,0,0,0.06)']}
-          locations={[0, 0.45, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
+        <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.gloss]} />
 
         {unread && <Ribbon />}
         {article.status === 'link_only' && (
@@ -128,7 +113,18 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 7,
     borderBottomRightRadius: 7,
   },
-  spine: { position: 'absolute', left: 0, top: 0, bottom: 0 },
+  spine: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    experimental_backgroundImage:
+      'linear-gradient(to right, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.06) 35%, rgba(255,255,255,0.18) 55%, rgba(255,255,255,0) 100%)',
+  },
+  gloss: {
+    experimental_backgroundImage:
+      'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.06) 100%)',
+  },
   typeCover: { flex: 1, paddingLeft: 18, paddingRight: 12, paddingTop: 14, paddingBottom: 12 },
   typeTitle: { marginTop: 10 },
   typeFoot: { flex: 1, justifyContent: 'flex-end' },

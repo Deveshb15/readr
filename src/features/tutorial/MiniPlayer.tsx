@@ -141,7 +141,7 @@ function Player() {
           <T variant="monoMd" style={styles.center}>
             share any page, tap{' '}
             <T variant="monoMd" color={colors.ink}>
-              readr
+              Readr
             </T>
             . that's it.
           </T>

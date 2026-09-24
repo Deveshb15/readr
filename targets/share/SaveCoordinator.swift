@@ -77,8 +77,8 @@ final class SaveCoordinator: ObservableObject {
     if identity.isPractice == true, ArticleWriter.copyPracticeSample(to: id) {
       savedId = id
       ArticleWriter.markForIngest(id)
-      card.title = "welcome to readr"
-      card.meta = "1 min · readr"
+      card.title = "welcome to Readr"
+      card.meta = "1 min · Readr"
       saved(linkOnly: false)
       return await lingerThenComplete()
     }

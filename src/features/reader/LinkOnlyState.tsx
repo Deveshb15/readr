@@ -20,8 +20,8 @@ export function LinkOnlyState({ article }: { article: Article }) {
       <T variant="readTitle">{article.title}</T>
       <T variant="monoSm" color={colors.textMuted}>
         {offline
-          ? "readr couldn't save this page for offline reading. it'll try again when you're back online."
-          : "readr couldn't save a clean copy of this page yet."}
+          ? "Readr couldn't save this page for offline reading. it'll try again when you're back online."
+          : "Readr couldn't save a clean copy of this page yet."}
       </T>
       {!offline && (
         <View style={styles.actions}>
