@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { useEventListener } from 'expo';
-import { useVideoPlayer, VideoView } from 'expo-video';
+import { isPictureInPictureSupported, useVideoPlayer, VideoView } from 'expo-video';
 import { useRef } from 'react';
 import { Linking, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -16,6 +16,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useToast } from '../../design/components/Toast';
 import { haptic } from '../../design/haptics';
 import { springs, useMotionMode } from '../../design/motion';
 import { colors, radius, space } from '../../design/tokens';
@@ -102,10 +103,22 @@ function Player() {
   const trySafari = () => {
     markStarted(Date.now());
     player.play();
+    if (!isPictureInPictureSupported()) {
+      useToast.getState().show("picture-in-picture isn't available on this device");
+      setTimeout(openSafari, 1200);
+      return;
+    }
     // Start picture-in-picture explicitly, then leave once it's up (onPictureInPictureStart).
     // Relying on automatic PiP is unreliable when our own app opens another app.
-    videoRef.current?.startPictureInPicture().catch(() => openSafari());
-    pendingSafari.current = setTimeout(openSafari, 1200);
+    pendingSafari.current = setTimeout(() => {
+      console.warn('[tutorial] picture-in-picture did not start within 1.5s; opening Safari anyway');
+      openSafari();
+    }, 1500);
+    videoRef.current?.startPictureInPicture().catch((e: unknown) => {
+      console.warn('[tutorial] startPictureInPicture failed', e);
+      useToast.getState().show("couldn't start picture-in-picture");
+      openSafari();
+    });
   };
 
   if (expanded) {
@@ -118,7 +131,8 @@ function Player() {
             style={styles.videoExpanded}
             allowsPictureInPicture
             startsPictureInPictureAutomatically
-            nativeControls={false}
+            // AVPlayerViewController can't enter picture-in-picture with its controls hidden.
+            nativeControls
             contentFit="cover"
             onPictureInPictureStart={() => {
               if (pendingSafari.current) openSafari();
