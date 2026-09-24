@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#F8F7FF"/><stop offset="60%" stop-color="#EEECFD"/><stop offset="100%" stop-color="#DEDAF6"/>
+  </linearGradient>
+  <radialGradient id="bgGlow" cx="0.3" cy="0.18" r="0.8">
+    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="inkPuff" cx="0.32" cy="0.25" r="0.85">
+    <stop offset="0%" stop-color="#5A48FF"/><stop offset="45%" stop-color="#2410E2"/><stop offset="100%" stop-color="#1100A0"/>
+  </radialGradient>
+  <radialGradient id="inkPuffDeep" cx="0.3" cy="0.25" r="0.9">
+    <stop offset="0%" stop-color="#3A26F0"/><stop offset="55%" stop-color="#1703C4"/><stop offset="100%" stop-color="#0B0080"/>
+  </radialGradient>
+  <filter id="drop" x="-40%" y="-40%" width="180%" height="190%">
+    <feDropShadow dx="0" dy="30" stdDeviation="34" flood-color="#2A1BA8" flood-opacity="0.30"/>
+    <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1A0E6E" flood-opacity="0.16"/>
+  </filter>
+  <filter id="blur40" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+  <filter id="blur24" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="24"/></filter>
+  <filter id="blur6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  
+</defs>
+<rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+<rect width="1024" height="1024" rx="228" fill="url(#bgGlow)"/>
+
+<clipPath id="c5a"><path d="M378.7 379.7 Q372 300 451.6 291.7 L560.4 280.3 Q640 272 646.7 351.7 L669.3 620.3 Q676 700 596.5 708.9 L487.5 721.1 Q408 730 401.3 650.3 Z"/></clipPath>
+<g filter="url(#drop)"><path d="M378.7 379.7 Q372 300 451.6 291.7 L560.4 280.3 Q640 272 646.7 351.7 L669.3 620.3 Q676 700 596.5 708.9 L487.5 721.1 Q408 730 401.3 650.3 Z" fill="#DAD5FA"/></g>
+<g clip-path="url(#c5a)">
+  <ellipse cx="470" cy="330" rx="120" ry="60" fill="#FFFFFF" fill-opacity="0.5" filter="url(#blur24)"/>
+</g>
+<clipPath id="c5b"><path d="M349.1 397.9 Q352 318 431.9 321.5 L548.1 326.5 Q628 330 625.1 409.9 L614.9 692.1 Q612 772 532.1 768.5 L415.9 763.5 Q336 760 338.9 680.1 Z"/></clipPath>
+<g filter="url(#drop)"><path d="M349.1 397.9 Q352 318 431.9 321.5 L548.1 326.5 Q628 330 625.1 409.9 L614.9 692.1 Q612 772 532.1 768.5 L415.9 763.5 Q336 760 338.9 680.1 Z" fill="url(#inkPuff)"/></g>
+<g clip-path="url(#c5b)"><path d="M349.1 397.9 Q352 318 431.9 321.5 L548.1 326.5 Q628 330 625.1 409.9 L614.9 692.1 Q612 772 532.1 768.5 L415.9 763.5 Q336 760 338.9 680.1 Z" fill="none" stroke="#080060" stroke-opacity="0.42" stroke-width="80" filter="url(#blur24)" transform="translate(14 24)"/>
+  <ellipse cx="450" cy="400" rx="100" ry="140" fill="#FFFFFF" fill-opacity="0.5" filter="url(#blur24)"/>
+</g></svg>

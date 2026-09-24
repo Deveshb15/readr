@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#F8F7FF"/><stop offset="60%" stop-color="#EEECFD"/><stop offset="100%" stop-color="#DEDAF6"/>
+  </linearGradient>
+  <radialGradient id="bgGlow" cx="0.3" cy="0.18" r="0.8">
+    <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="inkPuff" cx="0.32" cy="0.25" r="0.85">
+    <stop offset="0%" stop-color="#5A48FF"/><stop offset="45%" stop-color="#2410E2"/><stop offset="100%" stop-color="#1100A0"/>
+  </radialGradient>
+  <radialGradient id="inkPuffDeep" cx="0.3" cy="0.25" r="0.9">
+    <stop offset="0%" stop-color="#3A26F0"/><stop offset="55%" stop-color="#1703C4"/><stop offset="100%" stop-color="#0B0080"/>
+  </radialGradient>
+  <filter id="drop" x="-40%" y="-40%" width="180%" height="190%">
+    <feDropShadow dx="0" dy="30" stdDeviation="34" flood-color="#2A1BA8" flood-opacity="0.30"/>
+    <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1A0E6E" flood-opacity="0.16"/>
+  </filter>
+  <filter id="blur40" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="40"/></filter>
+  <filter id="blur24" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="24"/></filter>
+  <filter id="blur6" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  
+</defs>
+<rect width="1024" height="1024" rx="228" fill="url(#bg)"/>
+<rect width="1024" height="1024" rx="228" fill="url(#bgGlow)"/>
+
+<clipPath id="c1"><path d="M372.0 334.0 Q372 264 442.0 264.0 L582.0 264.0 Q652 264 652.0 334.0 L652.0 700.0 Q652 770 597.0 726.8 L567.0 703.2 Q512 660 457.0 703.2 L427.0 726.8 Q372 770 372.0 700.0 Z"/></clipPath>
+<g filter="url(#drop)"><path d="M372.0 334.0 Q372 264 442.0 264.0 L582.0 264.0 Q652 264 652.0 334.0 L652.0 700.0 Q652 770 597.0 726.8 L567.0 703.2 Q512 660 457.0 703.2 L427.0 726.8 Q372 770 372.0 700.0 Z" fill="url(#inkPuff)"/></g>
+<g clip-path="url(#c1)"><path d="M372.0 334.0 Q372 264 442.0 264.0 L582.0 264.0 Q652 264 652.0 334.0 L652.0 700.0 Q652 770 597.0 726.8 L567.0 703.2 Q512 660 457.0 703.2 L427.0 726.8 Q372 770 372.0 700.0 Z" fill="none" stroke="#080060" stroke-opacity="0.42" stroke-width="80" filter="url(#blur24)" transform="translate(14 24)"/>
+  <ellipse cx="470" cy="360" rx="80" ry="150" fill="#FFFFFF" fill-opacity="0.5" filter="url(#blur24)"/>
+</g></svg>
