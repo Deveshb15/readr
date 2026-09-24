@@ -100,13 +100,29 @@ export function extensionFor(url: string): string {
   return m ? m[1].toLowerCase().replace('jpeg', 'jpg') : 'jpg';
 }
 
+const TRACKER_RE = /pixel|beacon|tracking|CentralAutoLogin|\/1x1|[?&]type=1x1|spacer\.gif|analytics/i;
+
+/** 1×1 beacons and tracking pixels are not article images. */
+export function isTrackingPixel(img: Element): boolean {
+  const w = Number(img.getAttribute('width'));
+  const h = Number(img.getAttribute('height'));
+  if ((w > 0 && w <= 2) || (h > 0 && h <= 2)) return true;
+  return TRACKER_RE.test(img.getAttribute('src') ?? '');
+}
+
+/** Same image regardless of tracking/query params (og:image vs inline copy). */
+export function sameImage(a: string, b: string): boolean {
+  const strip = (u: string) => u.split(/[?#]/)[0].replace(/^https?:\/\//, '');
+  return strip(a) === strip(b);
+}
+
 /** Rewrites <img src> to local `images/<n>.<ext>` and returns the download manifest. */
 export function localizeImages(root: ParentNode): ImageEntry[] {
   const byUrl = new Map<string, ImageEntry>();
   const out: ImageEntry[] = [];
   for (const img of Array.from(root.querySelectorAll('img'))) {
     const src = img.getAttribute('src');
-    if (!src || !/^https?:/i.test(src)) {
+    if (!src || !/^https?:/i.test(src) || isTrackingPixel(img)) {
       img.remove();
       continue;
     }

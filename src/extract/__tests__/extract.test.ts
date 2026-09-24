@@ -36,7 +36,7 @@ describe('extract: blog with lazy images', () => {
     expect(srcs).toContain('https://cdn.example.com/img/seat.png');
     expect(r.html).toContain('src="images/0.jpg"');
     expect(r.html).not.toMatch(/src="data:/);
-    expect(r.images[0]).toMatchObject({ file: 'images/0.jpg', width: 1200, height: 800 });
+    expect(r.images.find((i) => i.src.endsWith('/img/wing.jpg'))).toMatchObject({ width: 1200, height: 800 });
   });
 
   it('picks the widest srcset candidate within 1400w', () => {
@@ -55,8 +55,10 @@ describe('extract: blog with lazy images', () => {
     expect(r.html).not.toMatch(/class=|style=/);
   });
 
-  it('uses the first inline image as lead', () => {
-    expect(r.leadImage).toBe('https://fieldnotes.example.com/img/wing.jpg');
+  it('puts the og:image hero first (reader hero + book cover) when the body lacks it', () => {
+    expect(r.leadImage).toBe('https://fieldnotes.example.com/og/altitude.jpg');
+    expect(r.images[0]).toMatchObject({ src: 'https://fieldnotes.example.com/og/altitude.jpg', file: 'images/0.jpg' });
+    expect(r.html.indexOf('data-hero')).toBeLessThan(r.html.indexOf('wing'));
   });
 });
 
@@ -104,6 +106,25 @@ describe('extract: picture, duplicates, noscript', () => {
     const before = doc.documentElement.outerHTML;
     extract(doc, url);
     expect(doc.documentElement.outerHTML).toBe(before);
+  });
+});
+
+describe('extract: Wikipedia-style collapsed sections, tracking pixels, hero already inline', () => {
+  const url = 'https://en.m.wikipedia.org/wiki/Reading';
+  const r = ok(extract(load('wiki-collapsed.html', url), url));
+
+  it('keeps hidden="until-found" sections (mobile Wikipedia collapses them)', () => {
+    expect(r.html).toContain('COLLAPSED-SECTION-MARKER');
+  });
+
+  it('drops 1x1 tracking pixels', () => {
+    expect(r.images.map((i) => i.src).join(' ')).not.toContain('CentralAutoLogin');
+  });
+
+  it('does not duplicate the hero when og:image is already in the body (query strings ignored)', () => {
+    expect(r.images).toHaveLength(1);
+    expect(r.html).not.toContain('data-hero');
+    expect(r.leadImage).toBe(r.images[0].src);
   });
 });
 

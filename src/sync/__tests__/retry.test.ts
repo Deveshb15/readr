@@ -195,6 +195,22 @@ describe('runRetryQueue', () => {
     expect(h.repo.get(b.id)?.retryAttempts).toBe(0); // never attempted
   });
 
+  it('refresh re-extracts a ready article (picks up a hero image)', async () => {
+    const a = article(1, { status: 'ready', wordCount: 500 });
+    const h = harness([a], [metaFor(a, { status: 'ready', wordCount: 500 })]);
+    await runRetryQueue(h.deps, a.id, true);
+    expect(h.content.get(a.id)).toContain('images/0.jpg');
+    expect(h.repo.get(a.id)).toMatchObject({ status: 'ready', title: 'Recovered', hasThumb: true });
+  });
+
+  it('refresh never replaces a full save with a shorter (paywalled) version', async () => {
+    const a = article(1, { status: 'ready', wordCount: 3000 });
+    const h = harness([a], [metaFor(a, { status: 'ready', wordCount: 3000, title: 'Full article' })]);
+    await runRetryQueue(h.deps, a.id, true);
+    expect(h.content.has(a.id)).toBe(false);
+    expect(h.meta(a.id).title).toBe('Full article');
+  });
+
   it('retryNow targets one item even if it is in backoff', async () => {
     const a = article(1, { nextRetryAt: NOW + 3_600_000, retryAttempts: 2 });
     const h = harness([a], [metaFor(a)]);

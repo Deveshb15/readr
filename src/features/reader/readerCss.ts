@@ -18,7 +18,8 @@ export const readerCss = `
   --body-size: 19px;
   --body-leading: 1.58;
   --measure: 34em;
-  --chrome-top: 96px;
+  /* Room for the status bar / Dynamic Island plus the floating buttons. */
+  --chrome-top: calc(env(safe-area-inset-top, 47px) + 76px);
 }
 
 * { box-sizing: border-box; }
@@ -67,6 +68,9 @@ article blockquote {
   font-style: italic; color: var(--ink-text);
 }
 article figure { margin: 1.8em 0; }
+/* Hero (og:image) — the article's lead image, wider and softer than inline figures. */
+article figure[data-hero] { margin: 0 -10px 30px; }
+article figure[data-hero] img { width: 100%; border-radius: 16px; box-shadow: 0 14px 30px -18px rgba(20,10,80,0.45); }
 article img { display: block; max-width: 100%; height: auto; border-radius: 10px; background: var(--wash); }
 article img.missing { width: 100%; aspect-ratio: var(--ratio, 3 / 2); }
 article figcaption, article .caption {

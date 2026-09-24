@@ -59,15 +59,19 @@ async function completeImages(deps: RetryDeps, meta: ArticleMeta): Promise<Artic
   return next;
 }
 
-async function retryOne(deps: RetryDeps, a: Article): Promise<void> {
+async function retryOne(deps: RetryDeps, a: Article, reextract = false): Promise<void> {
   let meta = readMeta(deps, a.id);
   if (!meta) return fail(deps, a);
 
-  if (meta.status === 'link_only') {
+  // Re-extract link-only saves, or any save the user asked to refresh. Existing content
+  // is only replaced after a successful extraction, so a failed refresh loses nothing.
+  if (meta.status === 'link_only' || reextract) {
     const html = await deps.fetchHtml(a.url).catch(() => null);
     if (!html || !deps.isOnline()) return fail(deps, a);
     const result = await deps.extract(prepareHtmlForExtraction(html), a.url).catch(() => null);
     if (!result || !result.ok) return fail(deps, a);
+    // A refresh fetched outside Safari may hit a paywall teaser; never trade a full save for less.
+    if (reextract && meta.status !== 'link_only' && result.wordCount < meta.wordCount * 0.8) return;
     deps.writeContent(a.id, result.html);
     meta = metaFromExtraction(meta, result);
     deps.writeMeta(a.id, meta);
@@ -87,17 +91,20 @@ async function retryOne(deps: RetryDeps, a: Article): Promise<void> {
 
 let running = false;
 
-/** Processes the due queue once, sequentially. Stops as soon as the device goes offline. */
-export async function runRetryQueue(deps: RetryDeps, onlyId?: string): Promise<void> {
+/**
+ * Processes the due queue once, sequentially. Stops as soon as the device goes offline.
+ * With `onlyId`, retries just that article (ignoring backoff); `reextract` also refreshes ready ones.
+ */
+export async function runRetryQueue(deps: RetryDeps, onlyId?: string, reextract = false): Promise<void> {
   if (running) return;
   running = true;
   try {
     const queue = onlyId
-      ? deps.repo.all().filter((a) => a.id === onlyId && a.status !== 'ready')
+      ? deps.repo.all().filter((a) => a.id === onlyId && (reextract || a.status !== 'ready'))
       : buildQueue(deps.repo.all(), deps.now());
     for (const a of queue) {
       if (!deps.isOnline()) break;
-      await retryOne(deps, a);
+      await retryOne(deps, a, reextract);
     }
   } finally {
     running = false;

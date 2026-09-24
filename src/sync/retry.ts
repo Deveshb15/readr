@@ -69,6 +69,14 @@ export async function retryNow(id: string): Promise<void> {
   if (online) await runRetryQueue(deps(), id);
 }
 
+/** Long-press "refresh from the web": re-extract a saved article (e.g. to pick up its hero image). */
+export async function refreshArticle(id: string): Promise<boolean> {
+  online = await isOnlineNow();
+  if (!online) return false;
+  await runRetryQueue(deps(), id, true);
+  return true;
+}
+
 /** Tracks connectivity; kicks the queue when the device comes back online. */
 export function startRetryWatcher(): () => void {
   return subscribeOnline((isOnline) => {

@@ -2,7 +2,7 @@
 // web view (URL-only shares) and the app's retry web view. One source, three runtimes.
 import { Readability } from '@mozilla/readability';
 
-import { absolutize, localizeImages, normalizeImages, type ImageEntry } from './images';
+import { absolutize, isTrackingPixel, localizeImages, normalizeImages, sameImage, type ImageEntry } from './images';
 
 export const MIN_TEXT_CHARS = 250;
 export const WORDS_PER_MINUTE = 230;
@@ -81,6 +81,29 @@ function sanitize(root: HTMLElement, base: string): void {
   }
 }
 
+/**
+ * Mobile Wikipedia (and others) collapse sections with hidden="until-found" so
+ * find-in-page can open them. Readability drops hidden nodes, so unhide them in the clone.
+ */
+function unhideCollapsed(doc: Document): void {
+  for (const el of Array.from(doc.querySelectorAll('[hidden="until-found"]'))) el.removeAttribute('hidden');
+}
+
+/** Prepends the og:image as a hero figure when the article body doesn't already include it. */
+function addHero(container: HTMLElement, hero: string | null, doc: Document): void {
+  if (!hero) return;
+  const inBody = Array.from(container.querySelectorAll('img')).some((img) => sameImage(img.getAttribute('src') ?? '', hero));
+  if (inBody) return;
+  const figure = doc.createElement('figure');
+  figure.setAttribute('data-hero', '');
+  const img = doc.createElement('img');
+  img.setAttribute('src', hero);
+  img.setAttribute('alt', '');
+  if (isTrackingPixel(img)) return;
+  figure.appendChild(img);
+  container.insertBefore(figure, container.firstChild);
+}
+
 function countWords(text: string): number {
   const words = text.trim().split(/\s+/);
   return words[0] === '' ? 0 : words.length;
@@ -97,6 +120,7 @@ export function extract(doc: Document, pageUrl: string): ExtractResult {
   try {
     // Readability mutates its input; never touch the live page.
     const clone = doc.cloneNode(true) as Document;
+    unhideCollapsed(clone);
     normalizeImages(clone, base);
     const article = new Readability(clone, { charThreshold: MIN_TEXT_CHARS, keepClasses: false }).parse();
     if (!article || !article.content) {
@@ -112,6 +136,7 @@ export function extract(doc: Document, pageUrl: string): ExtractResult {
     const container = inert.createElement('div');
     container.innerHTML = article.content;
     sanitize(container, base);
+    addHero(container, ogImage, inert);
     const images = localizeImages(container);
 
     const wordCount = countWords(text);

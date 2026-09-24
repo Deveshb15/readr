@@ -140,7 +140,7 @@ export function ReaderScreen() {
           )}
           {prepared.kind === 'page' && !ready && (
             // Native title while the web view warms up (P5); crossfades away on load.
-            <Animated.View exiting={FadeOut.duration(180)} style={[styles.placeholder, { paddingTop: insets.top + 96 }]}>
+            <Animated.View exiting={FadeOut.duration(180)} style={[styles.placeholder, { paddingTop: insets.top + 76 }]}>
               <T variant="byline" color={tone.muted}>
                 {[article.site, `${article.minutes} min`].filter(Boolean).join(' · ')}
               </T>

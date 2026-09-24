@@ -1,7 +1,7 @@
 // Builds articles/<id>/reader.html once per template version. Reader settings are
 // applied later via CSS variables (window.readr.apply), never by rewriting the file.
 
-export const TEMPLATE_VERSION = 1;
+export const TEMPLATE_VERSION = 2;
 export const TEMPLATE_MARKER = `<!-- readr-template:${TEMPLATE_VERSION} -->`;
 
 /** Relative from articles/<id>/reader.html to the seeded reader-assets folder. */

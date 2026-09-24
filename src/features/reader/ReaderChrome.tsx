@@ -1,11 +1,10 @@
-import { BlurView } from 'expo-blur';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, withSpring, type SharedValue } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 
 import { PressableScale } from '../../design/components/PressableScale';
 import { springs } from '../../design/motion';
-import { colors, radius } from '../../design/tokens';
+import { colors, fonts } from '../../design/tokens';
 import { T } from '../../design/typography';
 
 type Props = {
@@ -15,42 +14,43 @@ type Props = {
   onSettings: () => void;
 };
 
-/** Floating frosted pill: back + "aa". Hides on scroll down, returns on scroll up. */
+/**
+ * Two solid round buttons — back (left) and text settings (right) — that read as
+ * buttons on any paper tone. They slide away on scroll down and return on scroll up.
+ */
 export function ReaderChrome({ visible, top, onBack, onSettings }: Props) {
   const style = useAnimatedStyle(() => ({
     opacity: withSpring(visible.value, springs.slide),
-    transform: [{ translateY: withSpring((1 - visible.value) * -72, springs.slide) }],
+    transform: [{ translateY: withSpring((1 - visible.value) * -80, springs.slide) }],
   }));
   return (
-    <Animated.View style={[styles.wrap, { top }, style]}>
-      <View style={styles.pill}>
-        <BlurView intensity={28} tint="light" style={StyleSheet.absoluteFill} />
-        <View style={[StyleSheet.absoluteFill, styles.tint]} />
-        <PressableScale onPress={onBack} accessibilityRole="button" accessibilityLabel="back to library" style={styles.button}>
-          <Svg width={18} height={18} viewBox="0 0 24 24">
-            <Path d="M15 5 L8 12 L15 19" stroke={colors.text} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          </Svg>
-        </PressableScale>
-        <View style={styles.divider} />
-        <PressableScale onPress={onSettings} accessibilityRole="button" accessibilityLabel="reading settings" style={styles.button}>
-          <T variant="monoMd">aa</T>
-        </PressableScale>
-      </View>
+    <Animated.View pointerEvents="box-none" style={[styles.bar, { top }, style]}>
+      <PressableScale onPress={onBack} accessibilityRole="button" accessibilityLabel="back to library" style={styles.button}>
+        <Svg width={20} height={20} viewBox="0 0 24 24">
+          <Path d="M15 5 L8 12 L15 19" stroke={colors.text} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </Svg>
+      </PressableScale>
+      <PressableScale onPress={onSettings} accessibilityRole="button" accessibilityLabel="text settings" style={styles.button}>
+        <T variant="rowTitle" style={styles.aa}>
+          Aa
+        </T>
+      </PressableScale>
     </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { position: 'absolute', left: 16 },
-  pill: {
-    flexDirection: 'row',
+  bar: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', justifyContent: 'space-between' },
+  button: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
-    borderRadius: radius.pill,
-    overflow: 'hidden',
+    justifyContent: 'center',
+    backgroundColor: colors.surfaceSolid,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(255,255,255,0.7)',
+    borderColor: 'rgba(0,0,0,0.08)',
+    boxShadow: '0 6px 16px -6px rgba(20,10,80,0.28), 0 1px 3px rgba(20,10,80,0.12)',
   },
-  tint: { backgroundColor: 'rgba(255,255,255,0.5)' },
-  button: { width: 48, height: 44, alignItems: 'center', justifyContent: 'center' },
-  divider: { width: StyleSheet.hairlineWidth, height: 20, backgroundColor: colors.hairline },
+  aa: { fontFamily: fonts.serifTitle, fontSize: 17, lineHeight: 20, color: colors.text },
 });
