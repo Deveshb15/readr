@@ -11,6 +11,8 @@ import { useLibraryStore } from '../data/libraryStore';
 import { ToastHost } from '../design/components/Toast';
 import { colors } from '../design/tokens';
 import { syncNow } from '../sync';
+import { ExtractorHost } from '../sync/ExtractorHost';
+import { retryDue, startRetryWatcher } from '../sync/retry';
 import { seedGroup } from '../sync/seedGroup';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -30,10 +32,17 @@ export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync().catch(() => {});
     seedGroup(r).catch(() => {});
+    retryDue().catch(() => {});
+    const stopWatcher = startRetryWatcher();
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') syncNow();
+      if (state !== 'active') return;
+      syncNow();
+      retryDue().catch(() => {});
     });
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+      stopWatcher();
+    };
   }, [r]);
 
   return (
@@ -49,6 +58,7 @@ export default function RootLayout() {
           />
           <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         </Stack>
+        <ExtractorHost />
         <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
