@@ -18,7 +18,7 @@ sources: Mobbin — one year (primary UI), Matter / Corner / Cosmos / Orbit (sha
 
 - **Name:** Readr, with a capital R. Copy is otherwise lowercase; the brand name is the one exception besides bylines.
 - **App icon** (`assets/svg/icon-*.svg` → `assets/images/`):
-  - one ink book leaning −7° on a hand-drawn ink shelf line, on a light grey gradient (`#F1F1F4` → `#D2D2D8`);
+  - one ink book leaning −7° on a warm cream gradient (`#FFFDF8` → `#F8F2E6` → `#EDE3D0`), grounded by a soft blurred contact shadow;
   - an Instrument Serif Italic **R** in paper white on the cover;
   - a paper ribbon bookmark at the top edge, the same cue as the unread ribbon on library covers.
 - **Wordmark** (`Wordmark` component): "Readr" in Instrument Serif Italic with the **R** in ink. A hand-drawn shelf underline draws itself in. It's used in the library header and signs the founder letter.
