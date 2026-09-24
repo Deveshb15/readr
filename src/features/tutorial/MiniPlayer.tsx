@@ -27,8 +27,10 @@ import { useTutorial } from './tutorialStore';
 /** A stable, real article to practise the Safari share on (the practice URL is intercepted, so it can't count). */
 export const TUTORIAL_SAFARI_URL = 'https://en.wikipedia.org/wiki/Reading';
 
-const WIDTH = 208;
-const HEIGHT = Math.round((WIDTH * 9) / 16);
+// The tutorial is a portrait screen recording (540×1178), so the player is portrait too.
+const VIDEO_ASPECT = 540 / 1178;
+const WIDTH = 124;
+const HEIGHT = Math.round(WIDTH / VIDEO_ASPECT);
 
 /**
  * YouTube-style in-app mini player that keeps playing as system picture-in-picture
@@ -133,7 +135,7 @@ function Player() {
             startsPictureInPictureAutomatically
             // AVPlayerViewController can't enter picture-in-picture with its controls hidden.
             nativeControls
-            contentFit="cover"
+            contentFit="contain"
             onPictureInPictureStart={() => {
               if (pendingSafari.current) openSafari();
             }}
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: WIDTH,
     height: HEIGHT,
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.7)',
@@ -214,8 +216,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backdrop: { backgroundColor: colors.canvas },
-  expanded: { paddingHorizontal: space.x5, gap: space.x5 },
-  videoExpanded: { width: '100%', aspectRatio: 16 / 9, borderRadius: radius.card, overflow: 'hidden' },
+  expanded: { flex: 1, paddingHorizontal: space.x5, gap: space.x5 },
+  videoExpanded: {
+    alignSelf: 'center',
+    height: '62%',
+    aspectRatio: VIDEO_ASPECT,
+    borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: colors.canvasDeep,
+  },
   center: { textAlign: 'center' },
   ink: {
     height: 56,
