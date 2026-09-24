@@ -1,5 +1,3 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <g transform="rotate(-7 512 742)">
-    <path d="M367 290 H650 Q676 290 676 316 V720 Q676 746 650 746 H367 Q360 746 360 739 V297 Q360 290 367 290 Z" fill="white"/>
-  </g>
+  <g transform="translate(512 520) scale(1.1) translate(-512 -514)"><path d="M356.0 340.0 Q356 236 460.0 236.0 L564.0 236.0 Q668 236 668.0 340.0 L668.0 746.0 Q668 792 633.3 761.8 L540.6 681.0 Q512 656 483.4 681.0 L390.7 761.8 Q356 792 356.0 746.0 Z" fill="white"/></g>
 </svg>

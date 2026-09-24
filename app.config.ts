@@ -42,7 +42,7 @@ const config: ExpoConfig = {
     'expo-router',
     [
       'expo-splash-screen',
-      { backgroundColor: '#F8F2E6', image: './assets/images/splash-icon.png', imageWidth: 140 },
+      { backgroundColor: '#EFEDFD', image: './assets/images/splash-icon.png', imageWidth: 140 },
     ],
     'expo-sqlite',
     'expo-image',

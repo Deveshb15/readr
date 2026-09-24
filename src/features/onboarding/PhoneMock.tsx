@@ -51,7 +51,7 @@ export function PhoneMock() {
             const isReadr = app === 'Readr';
             const icon = (
               <View style={[styles.icon, isReadr && styles.readrIcon]}>
-                {isReadr && <Doodle doodle={doodleNamed('book') ?? doodles[0]} size={26} color={colors.white} />}
+                {isReadr && <Doodle doodle={doodleNamed('bookmark') ?? doodles[0]} size={26} color={colors.white} />}
               </View>
             );
             return (
