@@ -1,12 +1,13 @@
 import { BlurView } from 'expo-blur';
 import { useEventListener } from 'expo';
 import { isPictureInPictureSupported, useVideoPlayer, VideoView } from 'expo-video';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   FadeOut,
+  LinearTransition,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -27,10 +28,14 @@ import { useTutorial } from './tutorialStore';
 /** A stable, real article to practise the Safari share on (the practice URL is intercepted, so it can't count). */
 export const TUTORIAL_SAFARI_URL = 'https://en.wikipedia.org/wiki/Reading';
 
-// The tutorial is a portrait screen recording (540×1178), so the player is portrait too.
-const VIDEO_ASPECT = 540 / 1178;
-const WIDTH = 124;
+// The tutorial is a square, action-following cut (480×480). Square keeps the system
+// picture-in-picture window small so it doesn't cover the share sheet.
+const VIDEO_ASPECT = 1;
+const WIDTH = 132;
 const HEIGHT = Math.round(WIDTH / VIDEO_ASPECT);
+// Where the video shrinks to right before picture-in-picture starts. iOS animates PiP out
+// of the source view and settles it in the nearest corner, so this puts it top-right.
+const LAUNCH_SIZE = 112;
 
 /**
  * YouTube-style in-app mini player that keeps playing as system picture-in-picture
@@ -64,7 +69,7 @@ function Player() {
     insets: { top: insets.top, bottom: insets.bottom, left: 0, right: 0 },
     margin: space.x4,
   };
-  const start = cornerPoint('bottomRight', bounds);
+  const start = cornerPoint('topRight', bounds);
   const x = useSharedValue(start.x);
   const y = useSharedValue(start.y);
   const ox = useSharedValue(0);
@@ -102,16 +107,10 @@ function Player() {
     Linking.openURL(TUTORIAL_SAFARI_URL).catch(() => {});
   };
 
-  const trySafari = () => {
-    markStarted(Date.now());
-    player.play();
-    if (!isPictureInPictureSupported()) {
-      useToast.getState().show("picture-in-picture isn't available on this device");
-      setTimeout(openSafari, 1200);
-      return;
-    }
-    // Start picture-in-picture explicitly, then leave once it's up (onPictureInPictureStart).
-    // Relying on automatic PiP is unreliable when our own app opens another app.
+  // True while the expanded video shrinks into the top-right corner before PiP starts.
+  const [launching, setLaunching] = useState(false);
+
+  const startPip = () => {
     pendingSafari.current = setTimeout(() => {
       console.warn('[tutorial] picture-in-picture did not start within 1.5s; opening Safari anyway');
       openSafari();
@@ -123,23 +122,44 @@ function Player() {
     });
   };
 
+  const trySafari = () => {
+    markStarted(Date.now());
+    player.play();
+    if (!isPictureInPictureSupported()) {
+      useToast.getState().show("picture-in-picture isn't available on this device");
+      setTimeout(openSafari, 1200);
+      return;
+    }
+    // Shrink into the top-right corner first, then start picture-in-picture explicitly and
+    // leave once it's up (onPictureInPictureStart). Automatic PiP is unreliable when our own
+    // app opens another app.
+    setLaunching(true);
+    setTimeout(startPip, mode === 'full' ? 380 : 0);
+  };
+
   if (expanded) {
     return (
       <Animated.View entering={FadeIn} exiting={FadeOut} style={[StyleSheet.absoluteFill, styles.backdrop]}>
         <View style={[styles.expanded, { marginTop: insets.top + space.x10 }]}>
-          <VideoView
-            ref={videoRef}
-            player={player}
-            style={styles.videoExpanded}
-            allowsPictureInPicture
-            startsPictureInPictureAutomatically
-            // AVPlayerViewController can't enter picture-in-picture with its controls hidden.
-            nativeControls
-            contentFit="contain"
-            onPictureInPictureStart={() => {
-              if (pendingSafari.current) openSafari();
-            }}
-          />
+          <Animated.View
+            layout={mode === 'full' ? LinearTransition.springify().damping(22) : undefined}
+            style={launching ? [styles.videoLaunch, { top: -space.x10 + 8 }] : styles.videoExpanded}
+          >
+            <VideoView
+              ref={videoRef}
+              player={player}
+              style={StyleSheet.absoluteFill}
+              allowsPictureInPicture
+              startsPictureInPictureAutomatically
+              // AVPlayerViewController can't enter picture-in-picture with its controls hidden.
+              nativeControls
+              contentFit="cover"
+              onPictureInPictureStart={() => {
+                if (pendingSafari.current) openSafari();
+              }}
+              onPictureInPictureStop={() => setLaunching(false)}
+            />
+          </Animated.View>
           <T variant="monoMd" style={styles.center}>
             share any page, tap{' '}
             <T variant="monoMd" color={colors.ink}>
@@ -219,9 +239,19 @@ const styles = StyleSheet.create({
   expanded: { flex: 1, paddingHorizontal: space.x5, gap: space.x5 },
   videoExpanded: {
     alignSelf: 'center',
-    height: '62%',
+    width: '86%',
     aspectRatio: VIDEO_ASPECT,
     borderRadius: radius.card,
+    overflow: 'hidden',
+    backgroundColor: colors.canvasDeep,
+  },
+  // Top-right corner of the screen (container has 20pt side padding and a top margin).
+  videoLaunch: {
+    position: 'absolute',
+    right: -4,
+    width: LAUNCH_SIZE,
+    height: LAUNCH_SIZE,
+    borderRadius: 18,
     overflow: 'hidden',
     backgroundColor: colors.canvasDeep,
   },
