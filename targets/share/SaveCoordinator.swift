@@ -78,7 +78,9 @@ final class SaveCoordinator: ObservableObject {
       savedId = id
       ArticleWriter.markForIngest(id)
       card.title = "welcome to readr"
-      return saved(linkOnly: false)
+      card.meta = "1 min · readr"
+      saved(linkOnly: false)
+      return await lingerThenComplete()
     }
 
     // Safari hands us the extraction; other apps need a fetch + off-screen extract.
