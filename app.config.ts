@@ -25,6 +25,10 @@ const config: ExpoConfig = {
       ITSAppUsesNonExemptEncryption: false,
     },
   },
+  // iOS-only product, but prebuild needs a package name if Android is ever generated.
+  android: {
+    package: 'com.devesh.readr',
+  },
   plugins: [
     'expo-router',
     [
