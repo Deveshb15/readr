@@ -42,3 +42,4 @@ yarn-error.*
 
 # Readr
 .claude/worktrees/
+targets/share/generated/
