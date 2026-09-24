@@ -9,6 +9,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { repo } from '../data/db';
 import { useLibraryStore } from '../data/libraryStore';
 import { ToastHost } from '../design/components/Toast';
+import { Celebration } from '../features/tutorial/Celebration';
+import { MiniPlayer } from '../features/tutorial/MiniPlayer';
+import { useFirstSafariSave } from '../features/tutorial/useFirstSafariSave';
 import { colors } from '../design/tokens';
 import { syncNow } from '../sync';
 import { ExtractorHost } from '../sync/ExtractorHost';
@@ -29,6 +32,7 @@ function bootLibrary() {
 export default function RootLayout() {
   // Runs before the first render so the library's first commit already has data.
   const [r] = useState(bootLibrary);
+  useFirstSafariSave();
   useEffect(() => {
     SplashScreen.hideAsync().catch(() => {});
     seedGroup(r).catch(() => {});
@@ -59,6 +63,8 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         </Stack>
         <ExtractorHost />
+        <MiniPlayer />
+        <Celebration />
         <ToastHost />
       </SafeAreaProvider>
     </GestureHandlerRootView>
