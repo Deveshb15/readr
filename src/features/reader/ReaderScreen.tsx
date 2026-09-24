@@ -11,6 +11,7 @@ import { groupRootUri } from '../../data/sharedContainer';
 import { haptic } from '../../design/haptics';
 import { colors, paperTones, space } from '../../design/tokens';
 import { T } from '../../design/typography';
+import { measure } from '../../perf';
 import { LinkOnlyState } from './LinkOnlyState';
 import { chromeDirection, createPositionTracker, type ScrollSample } from './positionTracker';
 import { prepareReader } from './prepareReader';
@@ -99,6 +100,7 @@ export function ReaderScreen() {
         web.current?.injectJavaScript(`window.readr.scrollTo(${Math.round(article.scrollY)}); true;`);
       }
       setReady(true);
+      measure('open-article → text visible', 'open-article-tap');
     } else if (msg.type === 'scroll') {
       progress.value = msg.p;
       const dir = chromeDirection(lastY.current, msg.y);

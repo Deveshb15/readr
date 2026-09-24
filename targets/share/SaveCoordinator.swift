@@ -1,5 +1,9 @@
 import Foundation
+import OSLog
 import UniformTypeIdentifiers
+
+/// Instruments → Points of Interest: first frame → text written → dismiss (plan P1).
+let signposter = OSSignposter(subsystem: "com.devesh.readr.share", category: .pointsOfInterest)
 
 enum SaveOutcome: Equatable {
   case preparing
@@ -39,7 +43,11 @@ final class SaveCoordinator: ObservableObject {
     self.context = context
   }
 
+  private var saveInterval: OSSignpostIntervalState?
+
   func begin() {
+    signposter.emitEvent("card-visible")
+    saveInterval = signposter.beginInterval("save")
     work = Task { await run() }
   }
 
@@ -132,6 +140,7 @@ final class SaveCoordinator: ObservableObject {
   // MARK: Outcomes
 
   private func saved(linkOnly: Bool) {
+    signposter.emitEvent("text-written")
     savedAt = Date()
     card.outcome = linkOnly ? .linkOnly : .saved
     linkOnly ? Haptics.warning() : Haptics.success()
@@ -161,6 +170,7 @@ final class SaveCoordinator: ObservableObject {
   private func complete() {
     guard !finished else { return }
     finished = true
+    if let saveInterval { signposter.endInterval("save", saveInterval) }
     context?.completeRequest(returningItems: nil)
   }
 }

@@ -11,6 +11,7 @@ import { Doodle } from '../../design/doodles/Doodle';
 import { doodleAt } from '../../design/doodles/registry';
 import { useMotionMode } from '../../design/motion';
 import { colors, inset, radius, size, space } from '../../design/tokens';
+import { mark } from '../../perf';
 import { T } from '../../design/typography';
 import { rowMeta } from './selectors';
 
@@ -42,6 +43,7 @@ export const ArticleRow = memo(
       >
         <Link href={{ pathname: '/article/[id]', params: { id: article.id } }} asChild>
           <Pressable
+            onPressIn={() => mark('open-article-tap')}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
             accessibilityRole="button"
             accessibilityLabel={`${article.title}. ${rowMeta(article, now)}${unread ? '. unread' : ''}`}

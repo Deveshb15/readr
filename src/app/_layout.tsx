@@ -13,6 +13,7 @@ import { Celebration } from '../features/tutorial/Celebration';
 import { MiniPlayer } from '../features/tutorial/MiniPlayer';
 import { useFirstSafariSave } from '../features/tutorial/useFirstSafariSave';
 import { colors } from '../design/tokens';
+import { mark } from '../perf';
 import { syncNow } from '../sync';
 import { ExtractorHost } from '../sync/ExtractorHost';
 import { retryDue, startRetryWatcher } from '../sync/retry';
@@ -34,6 +35,7 @@ export default function RootLayout() {
   const [r] = useState(bootLibrary);
   useFirstSafariSave();
   useEffect(() => {
+    mark('library-first-commit');
     SplashScreen.hideAsync().catch(() => {});
     seedGroup(r).catch(() => {});
     retryDue().catch(() => {});
