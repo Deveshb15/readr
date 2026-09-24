@@ -20,10 +20,25 @@ export interface GroupFs {
   removeArticle(id: string): void;
 }
 
+let warned = false;
+
+/**
+ * The App Group folder. Without the entitlement (Expo Go, unsigned build) fall back to an
+ * app-private folder so the app still runs — but the share extension can't see it.
+ */
 export function groupRoot(): Directory {
   const dir = Paths.appleSharedContainers[APP_GROUP];
-  if (!dir) throw new Error(`App Group ${APP_GROUP} is not available (check entitlements).`);
-  return dir;
+  if (dir) return dir;
+  if (!warned) {
+    warned = true;
+    console.warn(
+      `App Group ${APP_GROUP} is unavailable (Expo Go or missing entitlement). ` +
+        'Using a local folder; share-extension saves will not appear. Build with `npx expo run:ios`.',
+    );
+  }
+  const fallback = new Directory(Paths.document, 'group-fallback');
+  if (!fallback.exists) fallback.create({ intermediates: true, idempotent: true });
+  return fallback;
 }
 
 export const groupPaths = {
