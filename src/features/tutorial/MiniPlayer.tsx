@@ -16,13 +16,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { PRACTICE_URL } from '../../core';
 import { haptic } from '../../design/haptics';
 import { springs, useMotionMode } from '../../design/motion';
 import { colors, radius, space } from '../../design/tokens';
 import { T } from '../../design/typography';
 import { cornerPoint, snapCorner, type Bounds } from './snap';
 import { useTutorial } from './tutorialStore';
+
+/** A stable, real article to practise the Safari share on (the practice URL is intercepted, so it can't count). */
+export const TUTORIAL_SAFARI_URL = 'https://en.wikipedia.org/wiki/Reading';
 
 const WIDTH = 208;
 const HEIGHT = Math.round((WIDTH * 9) / 16);
@@ -93,7 +95,7 @@ function Player() {
     markStarted(Date.now());
     player.play();
     // Leaving the app while playing hands the video to system picture-in-picture.
-    Linking.openURL(PRACTICE_URL).catch(() => {});
+    Linking.openURL(TUTORIAL_SAFARI_URL).catch(() => {});
   };
 
   if (expanded) {
