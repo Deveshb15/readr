@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { useEventListener } from 'expo';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { useEffect } from 'react';
+import { useRef } from 'react';
 import { Linking, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -67,8 +67,6 @@ function Player() {
   const ox = useSharedValue(0);
   const oy = useSharedValue(0);
 
-  useEffect(() => () => player.pause(), [player]);
-
   const pan = Gesture.Pan()
     .enabled(!expanded)
     .onStart(() => {
@@ -91,18 +89,41 @@ function Player() {
 
   const floating = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }, { translateY: y.value }] }));
 
+  // Only one VideoView is mounted at a time (mini or expanded); both share this ref.
+  const videoRef = useRef<VideoView>(null);
+  const pendingSafari = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openSafari = () => {
+    if (pendingSafari.current) clearTimeout(pendingSafari.current);
+    pendingSafari.current = null;
+    Linking.openURL(TUTORIAL_SAFARI_URL).catch(() => {});
+  };
+
   const trySafari = () => {
     markStarted(Date.now());
     player.play();
-    // Leaving the app while playing hands the video to system picture-in-picture.
-    Linking.openURL(TUTORIAL_SAFARI_URL).catch(() => {});
+    // Start picture-in-picture explicitly, then leave once it's up (onPictureInPictureStart).
+    // Relying on automatic PiP is unreliable when our own app opens another app.
+    videoRef.current?.startPictureInPicture().catch(() => openSafari());
+    pendingSafari.current = setTimeout(openSafari, 1200);
   };
 
   if (expanded) {
     return (
       <Animated.View entering={FadeIn} exiting={FadeOut} style={[StyleSheet.absoluteFill, styles.backdrop]}>
         <View style={[styles.expanded, { marginTop: insets.top + space.x10 }]}>
-          <VideoView player={player} style={styles.videoExpanded} allowsPictureInPicture startsPictureInPictureAutomatically nativeControls={false} contentFit="cover" />
+          <VideoView
+            ref={videoRef}
+            player={player}
+            style={styles.videoExpanded}
+            allowsPictureInPicture
+            startsPictureInPictureAutomatically
+            nativeControls={false}
+            contentFit="cover"
+            onPictureInPictureStart={() => {
+              if (pendingSafari.current) openSafari();
+            }}
+          />
           <T variant="monoMd" style={styles.center}>
             share any page, tap{' '}
             <T variant="monoMd" color={colors.ink}>
@@ -135,7 +156,15 @@ function Player() {
         accessibilityLabel="tutorial video. tap to expand, drag to move."
       >
         <BlurView intensity={24} tint="light" style={StyleSheet.absoluteFill} />
-        <VideoView player={player} style={StyleSheet.absoluteFill} allowsPictureInPicture startsPictureInPictureAutomatically nativeControls={false} contentFit="cover" />
+        <VideoView
+          ref={videoRef}
+          player={player}
+          style={StyleSheet.absoluteFill}
+          allowsPictureInPicture
+          startsPictureInPictureAutomatically
+          nativeControls={false}
+          contentFit="cover"
+        />
         <Pressable onPress={close} hitSlop={12} style={styles.close} accessibilityRole="button" accessibilityLabel="close tutorial">
           <T variant="monoXs" color={colors.white}>
             ×
