@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  backdrop: { backgroundColor: 'rgba(222,222,222,0.96)' },
+  backdrop: { backgroundColor: colors.canvas },
   expanded: { paddingHorizontal: space.x5, gap: space.x5 },
   videoExpanded: { width: '100%', aspectRatio: 16 / 9, borderRadius: radius.card, overflow: 'hidden' },
   center: { textAlign: 'center' },
