@@ -116,8 +116,8 @@ struct DoodleView: View {
       ZStack {
         ForEach(paths.indices, id: \.self) { i in
           paths[i]
-            .trim(from: 0, to: progress)
             .applying(CGAffineTransform(scaleX: scale, y: scale))
+            .trim(from: 0, to: progress)
             .stroke(ReadrColor.ink, style: StrokeStyle(lineWidth: 1.75, lineCap: .round, lineJoin: .round))
         }
       }

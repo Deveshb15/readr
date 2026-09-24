@@ -47,13 +47,13 @@
   },
   "scripts": {
     "start": "npm run bundles && expo start",
-    "ios": "expo run:ios",
+    "ios": "npm run bundles && npm run gen:swift && expo run:ios",
     "prebuild": "npm run bundles && npm run gen:swift && expo prebuild -p ios",
     "bundles": "tsx scripts/build-bundles.ts",
     "gen:swift": "tsx scripts/gen-swift.ts",
     "test": "jest",
     "typecheck": "tsc --noEmit",
-    "postinstall": "npm run bundles"
+    "postinstall": "npm run bundles && npm run gen:swift"
   },
   "private": true
 }
