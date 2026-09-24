@@ -12,6 +12,7 @@ import { useLibraryStore } from '../../data/libraryStore';
 import { DateChip } from '../../design/components/DateChip';
 import { EmptyState } from '../../design/components/EmptyState';
 import { PillToggle } from '../../design/components/PillToggle';
+import { Wordmark } from '../../design/components/Wordmark';
 import { haptic } from '../../design/haptics';
 import { colors, inset, space } from '../../design/tokens';
 import { T } from '../../design/typography';
@@ -129,7 +130,7 @@ export function LibraryScreen() {
     <View style={[styles.header, { paddingTop: insets.top + space.x4 }]}>
       <View style={styles.titleRow}>
         <View>
-          <T variant="italicDisplay">readr</T>
+          <Wordmark />
           <T variant="monoXs" color={colors.textMuted}>
             {articles.length} saved · {unread.length} to read
           </T>

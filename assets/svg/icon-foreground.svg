@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F1F1F4"/>
+      <stop offset="100%" stop-color="#D2D2D8"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.3" cy="0.22" r="0.7">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="cover" x1="360" y1="290" x2="660" y2="736" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2A16E6"/>
+      <stop offset="100%" stop-color="#1200A2"/>
+    </linearGradient>
+    <linearGradient id="spine" x1="360" y1="0" x2="406" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#000000" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#000000" stop-opacity="0.08"/>
+      <stop offset="80%" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="360" y1="290" x2="660" y2="736" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.18"/>
+      <stop offset="45%" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.08"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-20%" width="160%" height="150%">
+      <feDropShadow dx="0" dy="22" stdDeviation="26" flood-color="#140A50" flood-opacity="0.28"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#140A50" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+    <g transform="rotate(-7 512 742)">
+      <g filter="url(#shadow)">
+        <!-- page block (book thickness) -->
+        <path d="M383 300 H650 Q676 300 676 326 V720 Q676 746 650 746 H383 Q376 746 376 739 V307 Q376 300 383 300 Z" fill="#F7F5EF" stroke="#C9C6BC" stroke-width="3"/>
+        <path d="M376 295 H643 Q669 295 669 321 V715 Q669 741 643 741 H376 Q369 741 369 734 V302 Q369 295 376 295 Z" fill="#FBFAF6" stroke="#D6D3C9" stroke-width="3"/>
+        <!-- cover -->
+        <path d="M367 290 H634 Q660 290 660 316 V710 Q660 736 634 736 H367 Q360 736 360 729 V297 Q360 290 367 290 Z" fill="url(#cover)"/>
+      </g>
+      <!-- spine fold + highlight -->
+      <path d="M367 290 H406 V736 H367 Q360 736 360 729 V297 Q360 290 367 290 Z" fill="url(#spine)"/>
+      <!-- gloss -->
+      <path d="M367 290 H634 Q660 290 660 316 V710 Q660 736 634 736 H367 Q360 736 360 729 V297 Q360 290 367 290 Z" fill="url(#gloss)"/>
+      <!-- ribbon bookmark -->
+      <path d="M606 290 H636 V392 L621 377 L606 392 Z" fill="#F6F5F2"/>
+      <!-- the R -->
+      <text x="504" y="600" text-anchor="middle" font-family="Instrument Serif" font-style="italic" font-size="320" fill="#F6F5F2">R</text>
+    </g>
+    <!-- hand-drawn shelf -->
+    <path d="M318 758 C 420 752, 600 762, 706 754" fill="none" stroke="#1800CC" stroke-width="22" stroke-linecap="round"/>
+</svg>

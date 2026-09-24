@@ -9,11 +9,12 @@ const config: ExpoConfig = {
   scheme: 'readr',
   version: '1.0.0',
   orientation: 'portrait',
-  icon: './assets/icon.png',
+  icon: './assets/images/icon.png',
   // Light-only by product decision (origin: Key Decisions).
   userInterfaceStyle: 'light',
   ios: {
     bundleIdentifier: BUNDLE_ID,
+    icon: './assets/images/icon.png',
     supportsTablet: false,
     appleTeamId: process.env.APPLE_TEAM_ID,
     deploymentTarget: '18.0',
@@ -28,12 +29,20 @@ const config: ExpoConfig = {
   // iOS-only product, but prebuild needs a package name if Android is ever generated.
   android: {
     package: 'com.devesh.readr',
+    adaptiveIcon: {
+      foregroundImage: './assets/images/android-icon-foreground.png',
+      backgroundImage: './assets/images/android-icon-background.png',
+      monochromeImage: './assets/images/android-icon-monochrome.png',
+    },
+  },
+  web: {
+    favicon: './assets/images/favicon.png',
   },
   plugins: [
     'expo-router',
     [
       'expo-splash-screen',
-      { backgroundColor: '#DEDEDE', image: './assets/splash-icon.png', imageWidth: 120 },
+      { backgroundColor: '#E6E6EA', image: './assets/images/splash-icon.png', imageWidth: 140 },
     ],
     'expo-sqlite',
     'expo-image',
