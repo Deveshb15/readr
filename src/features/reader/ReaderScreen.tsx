@@ -7,11 +7,15 @@ import WebView, { type WebViewMessageEvent } from 'react-native-webview';
 
 import { repo } from '../../data/db';
 import { useLibraryStore } from '../../data/libraryStore';
+import { offlineState, siteLabel } from '../../data/article';
+import { queryTerms } from '../../data/search';
 import { groupRootUri } from '../../data/sharedContainer';
 import { haptic } from '../../design/haptics';
 import { colors, paperTones, space } from '../../design/tokens';
 import { T } from '../../design/typography';
 import { measure } from '../../perf';
+import { isOnlineNow } from '../../sync/connectivity';
+import { retryNow } from '../../sync/retry';
 import { LinkOnlyState } from './LinkOnlyState';
 import { chromeDirection, createPositionTracker, type ScrollSample } from './positionTracker';
 import { prepareReader } from './prepareReader';
@@ -22,7 +26,7 @@ import { cssVars, useReaderSettings } from './settingsStore';
 type BridgeMessage = ({ type: 'scroll' } & ScrollSample) | { type: 'ready' } | { type: 'link'; href: string };
 
 export function ReaderScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, q } = useLocalSearchParams<{ id: string; q?: string }>();
   const article = useLibraryStore((s) => s.articles.find((a) => a.id === id) ?? null);
   const insets = useSafeAreaInsets();
   const settings = useReaderSettings((s) => s.settings);
@@ -31,8 +35,18 @@ export function ReaderScreen() {
   const progress = useSharedValue(article?.progress ?? 0);
   const chromeVisible = useSharedValue(1);
   const lastY = useRef(0);
+  // Reload the page in place when images finish downloading or the article is downloaded
+  // again (new text), keeping the scroll position.
+  const [reloadKey, setReloadKey] = useState(0);
+  const restoreY = useRef<number | null>(null);
+  const contentStamp = article ? `${article.title}|${article.minutes}|${article.imagesDone}` : '';
+  const shownStamp = useRef(contentStamp);
+  const highlighted = useRef(false);
+  const [minutesLeft, setMinutesLeft] = useState(() =>
+    article ? Math.max(1, Math.round(article.minutes * (1 - article.progress))) : 0,
+  );
 
-  const prepared = useMemo(() => (article ? prepareReader(article) : null), [article?.id, article?.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  const prepared = useMemo(() => (article ? prepareReader(article) : null), [article?.id, article?.status, reloadKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const tracker = useMemo(() => {
     if (!article) return null;
@@ -53,8 +67,31 @@ export function ReaderScreen() {
   }, [article?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    useReaderSettings.getState().hydrate(repo());
-  }, []);
+    const r = repo();
+    useReaderSettings.getState().hydrate(r);
+    if (id) useLibraryStore.getState().setLastOpened(r, id);
+  }, [id]);
+
+  // Opening an article with missing images fetches them now (when online).
+  useEffect(() => {
+    if (!article || article.status !== 'partial' || !article.keepOffline) return;
+    let cancelled = false;
+    isOnlineNow().then((online) => {
+      if (online && !cancelled) retryNow(article.id).catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [article?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!article || !ready || contentStamp === shownStamp.current) return;
+    shownStamp.current = contentStamp;
+    restoreY.current = lastY.current;
+    setMinutesLeft(Math.max(1, Math.round(article.minutes * (1 - progress.value))));
+    setReady(false);
+    setReloadKey((k) => k + 1);
+  }, [contentStamp, ready]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Dwell timer + final flush on leave.
   useEffect(() => {
@@ -64,6 +101,8 @@ export function ReaderScreen() {
       clearInterval(t);
       tracker.tick(Date.now());
       tracker.flush(Date.now());
+      // Progress was written straight to the DB; let the library ("continue reading") see it.
+      useLibraryStore.getState().refresh(repo());
     };
   }, [tracker]);
 
@@ -96,13 +135,21 @@ export function ReaderScreen() {
     if (msg.type === 'ready') {
       // Apply settings before revealing so the page never flashes default styles.
       web.current?.injectJavaScript(`window.readr.apply(${JSON.stringify(cssVars(settings))}); true;`);
-      if (article.scrollY > 0 && article.readAt === null) {
-        web.current?.injectJavaScript(`window.readr.scrollTo(${Math.round(article.scrollY)}); true;`);
+      const y = restoreY.current ?? (article.readAt === null ? article.scrollY : 0);
+      if (y > 0) web.current?.injectJavaScript(`window.readr.scrollTo(${Math.round(y)}); true;`);
+      restoreY.current = null;
+      // Arrived from search: highlight the words and jump to the first match (once).
+      const terms = q ? queryTerms(q) : [];
+      if (terms.length && !highlighted.current) {
+        highlighted.current = true;
+        web.current?.injectJavaScript(`window.readr.highlight(${JSON.stringify(terms)}); true;`);
       }
       setReady(true);
       measure('open-article → text visible', 'open-article-tap');
     } else if (msg.type === 'scroll') {
       progress.value = msg.p;
+      const left = Math.max(1, Math.round(article.minutes * (1 - msg.p)));
+      if (left !== minutesLeft) setMinutesLeft(left);
       const dir = chromeDirection(lastY.current, msg.y);
       if (dir !== 'keep') chromeVisible.value = dir === 'show' ? 1 : 0;
       lastY.current = msg.y;
@@ -120,6 +167,7 @@ export function ReaderScreen() {
           ) : (
             <WebView
               ref={web}
+              key={reloadKey}
               source={{ uri: prepared.uri }}
               allowingReadAccessToURL={groupRootUri()}
               originWhitelist={['file://*']}
@@ -141,21 +189,34 @@ export function ReaderScreen() {
           {prepared.kind === 'page' && !ready && (
             // Native title while the web view warms up (P5); crossfades away on load.
             <Animated.View exiting={FadeOut.duration(180)} style={[styles.placeholder, { paddingTop: insets.top + 76 }]}>
-              <T variant="byline" color={tone.muted}>
-                {[article.site, `${article.minutes} min`].filter(Boolean).join(' · ')}
+              <T variant="monoXs" color={tone.muted} style={styles.kicker}>
+                {[siteLabel(article), article.minutes > 0 ? `${article.minutes} min read` : null].filter(Boolean).join(' · ').toLowerCase()}
               </T>
-              <T variant="readTitle" color={tone.text}>
+              <T variant="readTitle" color={tone.text} style={styles.title}>
                 {article.title}
               </T>
             </Animated.View>
           )}
       </View>
+      {/* Paper behind the status bar so text never scrolls under the clock. */}
+      <View
+        pointerEvents="none"
+        style={[
+          styles.statusScrim,
+          {
+            height: insets.top + 14,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${tone.background} 0%, ${tone.background} ${Math.round((insets.top / (insets.top + 14)) * 100)}%, transparent 100%)`,
+          },
+        ]}
+      />
       <ProgressHairline progress={progress} top={insets.top} />
       <ReaderChrome
         visible={chromeVisible}
         top={chromeTop}
         onBack={() => router.back()}
-        onSettings={() => router.push('/reader-settings')}
+        onSettings={() => router.push({ pathname: '/reader-settings', params: { id: article.id } })}
+        minutesLeft={article.minutes > 0 ? minutesLeft : null}
+        offline={offlineState(article)}
       />
     </View>
   );
@@ -165,5 +226,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.paper },
   center: { alignItems: 'center', justifyContent: 'center' },
   web: { flex: 1 },
-  placeholder: { ...StyleSheet.absoluteFillObject, paddingHorizontal: 24, gap: 14 },
+  placeholder: { ...StyleSheet.absoluteFill, paddingHorizontal: 24, gap: 16 },
+  // Matches .kicker in readerCss so the handoff to the web view doesn't jump.
+  kicker: { fontSize: 12, lineHeight: 16, letterSpacing: 0.24 },
+  title: { fontSize: 36, lineHeight: 40, letterSpacing: -0.6 },
+  statusScrim: { position: 'absolute', top: 0, left: 0, right: 0 },
 });

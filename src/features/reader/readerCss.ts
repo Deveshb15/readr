@@ -42,17 +42,23 @@ body {
 }
 main { max-width: var(--measure); margin: 0 auto; }
 
-header.article-head { margin-bottom: 36px; }
-.byline {
+header.article-head { margin-bottom: 34px; }
+.kicker {
   font-family: "Geist Mono", ui-monospace, monospace;
-  font-size: 12px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 14px;
+  font-size: 12px; line-height: 16px; letter-spacing: 0.02em; text-transform: lowercase;
+  color: var(--muted); margin: 0 0 16px;
 }
 h1.title {
   font-family: "Newsreader", serif; font-weight: 500; font-variation-settings: "opsz" 72;
-  font-size: 34px; line-height: 38px; letter-spacing: -0.5px; margin: 0 0 14px; text-wrap: balance;
+  font-size: 36px; line-height: 40px; letter-spacing: -0.6px; margin: 0; text-wrap: pretty;
 }
-.dek { font-family: "Instrument Serif", "Newsreader", serif; font-style: italic; font-size: 21px; line-height: 28px; color: var(--muted); margin: 0; }
+.dek {
+  font-family: "Instrument Serif", "Newsreader", serif; font-style: italic;
+  font-size: 22px; line-height: 29px; color: #4A4A55; margin: 14px 0 0; text-wrap: pretty;
+}
+.byline { font-style: italic; font-size: 16px; line-height: 22px; color: var(--muted); margin: 14px 0 0; }
+hr.head-rule { width: 44px; height: 2px; border: 0; border-radius: 2px; background: var(--ink); margin: 26px 0 0; text-align: left; }
+hr.head-rule::after { content: none; }
 
 article p { margin: 0 0 1.05em; }
 article > p:first-of-type::first-letter {
@@ -61,7 +67,15 @@ article > p:first-of-type::first-letter {
 article h2, article h3 { font-weight: 600; line-height: 1.25; margin: 1.8em 0 0.6em; text-wrap: balance; }
 article h2 { font-size: 1.26em; }
 article h3 { font-size: 1.08em; }
-article a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+/* Links stay in the text colour with a soft ink underline, so a link-dense page still reads calmly. */
+article a {
+  color: inherit; text-decoration: underline; text-decoration-color: rgba(24,0,204,0.32);
+  text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+}
+article a:active { color: var(--ink); text-decoration-color: var(--ink); }
+/* Footnote and citation marks ("[5]"): small and quiet. */
+article sup { font-family: "Geist Mono", ui-monospace, monospace; font-size: 0.55em; line-height: 0; color: var(--muted); }
+article sup a { color: inherit; text-decoration: none; }
 article em, article i { font-style: italic; }
 article blockquote {
   margin: 1.6em 0; padding: 0 0 0 18px; border-left: 2px solid var(--ink);
@@ -71,7 +85,8 @@ article figure { margin: 1.8em 0; }
 /* Hero (og:image) — the article's lead image, wider and softer than inline figures. */
 article figure[data-hero] { margin: 0 -10px 30px; }
 article figure[data-hero] img { width: 100%; border-radius: 16px; box-shadow: 0 14px 30px -18px rgba(20,10,80,0.45); }
-article img { display: block; max-width: 100%; height: auto; border-radius: 10px; background: var(--wash); }
+article img { display: block; max-width: 100%; height: auto; margin: 0 auto; border-radius: 10px; background: var(--wash); }
+article figcaption { text-align: center; }
 article img.missing { width: 100%; aspect-ratio: var(--ratio, 3 / 2); }
 article figcaption, article .caption {
   font-family: "Geist Mono", ui-monospace, monospace; font-size: 13px; line-height: 18px; color: var(--muted); margin-top: 8px;
@@ -95,4 +110,9 @@ article li { margin-bottom: 0.4em; }
 @media (prefers-reduced-motion: reduce) { .fin, .fin span { transition: none; } }
 
 ::selection { background: var(--wash); }
+
+/* Search hits carried over from the search screen. */
+mark.hit { background: var(--wash); color: inherit; border-radius: 4px; padding: 0 2px; }
+mark.hit.first { background: var(--ink); color: #FFFFFF; animation: hitpulse 1.2s ease-out 1; }
+@keyframes hitpulse { 0% { box-shadow: 0 0 0 0 rgba(24,0,204,0.45); } 100% { box-shadow: 0 0 0 12px rgba(24,0,204,0); } }
 `.trim();

@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
 
-import { extract, type ExtractSuccess } from '../extract';
+import { cleanTitle, extract, type ExtractSuccess } from '../extract';
 import { extensionFor, pickFromSrcset } from '../images';
 
 function load(name: string, url: string) {
@@ -139,5 +139,16 @@ describe('image helpers', () => {
     expect(extensionFor('https://e.com/a.JPEG?w=1')).toBe('jpg');
     expect(extensionFor('https://e.com/image?id=3')).toBe('jpg');
     expect(extensionFor('https://e.com/a.webp')).toBe('webp');
+  });
+});
+
+describe('cleanTitle', () => {
+  it('drops a trailing site name matching the domain or site name', () => {
+    expect(cleanTitle('Reading - Wikipedia', 'Wikimedia Foundation, Inc.', 'https://en.wikipedia.org/wiki/Reading')).toBe('Reading');
+    expect(cleanTitle('Why we sleep | The Verge', 'The Verge', 'https://example.com/a')).toBe('Why we sleep');
+  });
+  it('keeps subtitles and titles without a site suffix', () => {
+    expect(cleanTitle('Dune: Part Two - a review', null, 'https://blog.example.com/x')).toBe('Dune: Part Two - a review');
+    expect(cleanTitle('Plain title', 'Site', 'https://site.com')).toBe('Plain title');
   });
 });

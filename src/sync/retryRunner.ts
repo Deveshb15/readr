@@ -16,7 +16,8 @@ export type RetryDeps = {
   extract: (html: string, url: string) => Promise<ExtractResult>;
   downloadImage: (id: string, src: string, file: string) => Promise<boolean>;
   makeThumbnail: (id: string, file: string) => Promise<boolean>;
-  onArticleChanged: () => void;
+  /** Called after an article's files and row changed (refresh size, search index, store). */
+  onArticleChanged: (id: string) => void;
 };
 
 const IMAGE_CONCURRENCY = 4;
@@ -86,7 +87,7 @@ async function retryOne(deps: RetryDeps, a: Article, reextract = false): Promise
     retryAttempts: imagesStillMissing ? a.retryAttempts + 1 : 0,
     nextRetryAt: imagesStillMissing ? deps.now() + backoffMs(a.retryAttempts + 1) : null,
   });
-  deps.onArticleChanged();
+  deps.onArticleChanged(a.id);
 }
 
 let running = false;

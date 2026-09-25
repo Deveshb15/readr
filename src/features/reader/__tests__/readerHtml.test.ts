@@ -1,4 +1,4 @@
-import { buildReaderHtml, escapeHtml, isCurrentTemplate, TEMPLATE_MARKER } from '../readerHtml';
+import { buildReaderHtml, bylineFor, dekFor, escapeHtml, isCurrentTemplate, TEMPLATE_MARKER } from '../readerHtml';
 import { cssVars, DEFAULT_SETTINGS, parseSettings } from '../settingsStore';
 
 const doc = {
@@ -43,6 +43,26 @@ describe('buildReaderHtml', () => {
 
   it('omits minutes for link-only style docs', () => {
     expect(buildReaderHtml({ ...doc, minutes: 0 })).not.toContain('0 min');
+  });
+});
+
+describe('dekFor', () => {
+  it('drops a description that repeats the opening paragraph (citations ignored)', () => {
+    const body = '<p><b>Reading</b> is the process of taking in the sense.<sup><a>[1]</a></sup> More.</p>';
+    expect(dekFor('Reading is the process of taking in the sense.[1][2]', body)).toBeNull();
+  });
+  it('keeps a distinct description, without citation marks', () => {
+    expect(dekFor('A short guide.[3]', '<p>Body text.</p>')).toBe('A short guide.');
+  });
+});
+
+describe('bylineFor', () => {
+  it('prefixes names and skips repeats of the site or very long credits', () => {
+    expect(bylineFor('Ada Lin', 'Field Notes')).toBe('by Ada Lin');
+    expect(bylineFor('By Ada Lin', null)).toBe('By Ada Lin');
+    expect(bylineFor('Field Notes', 'Field notes')).toBeNull();
+    expect(bylineFor('x'.repeat(61), null)).toBeNull();
+    expect(bylineFor(null, null)).toBeNull();
   });
 });
 

@@ -30,6 +30,13 @@ const MIGRATIONS: string[] = [
    CREATE TABLE settings (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
    CREATE TABLE ingest_failures (id TEXT PRIMARY KEY NOT NULL, attempts INTEGER NOT NULL);
    CREATE TABLE tombstones (id TEXT PRIMARY KEY NOT NULL);`,
+  // v2: offline control + full-text search over saved articles.
+  `ALTER TABLE articles ADD COLUMN keep_offline INTEGER NOT NULL DEFAULT 1;
+   ALTER TABLE articles ADD COLUMN size_bytes INTEGER NOT NULL DEFAULT 0;
+   CREATE VIRTUAL TABLE article_fts USING fts5(
+     id UNINDEXED, title, site, body,
+     tokenize = 'porter unicode61 remove_diacritics 2'
+   );`,
 ];
 
 type Migratable = {

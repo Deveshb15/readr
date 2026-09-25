@@ -2,6 +2,7 @@ import { articleFromMeta, type Article } from '../data/article';
 import { isArticleMeta, type ArticleMeta } from '../data/articleMeta';
 import type { ArticleRepo } from '../data/repo';
 import type { GroupFs } from '../data/sharedContainer';
+import { backfillIndex, indexArticle } from './offline';
 
 export const MAX_INGEST_ATTEMPTS = 3;
 
@@ -47,8 +48,9 @@ export function ingest(fs: GroupFs, repo: ArticleRepo, now = Date.now()): Ingest
 
   const upsert = (meta: ArticleMeta) => {
     const existing = repo.get(meta.id);
-    const row = articleFromMeta(meta, existing, now);
+    const row = { ...articleFromMeta(meta, existing, now), sizeBytes: fs.articleSize(meta.id) };
     repo.upsert(row);
+    indexArticle(fs, repo, row);
     (existing ? result.updated : result.added).push(row);
   };
 
@@ -76,6 +78,8 @@ export function ingest(fs: GroupFs, repo: ArticleRepo, now = Date.now()): Ingest
       if (meta) upsert(meta);
     }
   }
+
+  backfillIndex(fs, repo);
 
   return result;
 }

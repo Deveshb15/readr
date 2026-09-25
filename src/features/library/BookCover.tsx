@@ -3,12 +3,13 @@ import { memo, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import type { Article } from '../../data/article';
+import { offlineState, siteLabel, type Article } from '../../data/article';
 import { groupPaths } from '../../data/sharedContainer';
 import { Doodle } from '../../design/doodles/Doodle';
 import { doodleAt } from '../../design/doodles/registry';
 import { colors } from '../../design/tokens';
 import { T } from '../../design/typography';
+import { OfflineBadge } from '../offline/OfflineBadge';
 import { paletteFor } from './coverStyle';
 
 type Props = { article: Article; width: number; drawOn?: boolean };
@@ -38,7 +39,7 @@ export const BookCover = memo(function BookCover({ article, width, drawOn = fals
         {thumb ? (
           <Image source={{ uri: thumb }} style={StyleSheet.absoluteFill} contentFit="cover" recyclingKey={article.id} transition={160} />
         ) : (
-          <TypeCover article={article} palette={palette} drawOn={drawOn} />
+          <TypeCover article={article} palette={palette} drawOn={drawOn} width={width} />
         )}
 
         {/* Spine: a dark fold near the left edge, then a soft highlight. Native CSS gradients (RN 0.86). */}
@@ -46,15 +47,12 @@ export const BookCover = memo(function BookCover({ article, width, drawOn = fals
         {/* Gloss: a faint diagonal sheen across the cover. */}
         <View pointerEvents="none" style={[StyleSheet.absoluteFill, styles.gloss]} />
 
-        {unread && <Ribbon />}
-        {article.status === 'link_only' && (
-          <View style={styles.badge}>
-            <T variant="monoXs" color={colors.white}>
-              needs internet
-            </T>
+        {unread && width >= 60 && <Ribbon />}
+        {width >= 60 ? (
+          <View style={styles.badgeCorner}>
+            <OfflineBadge state={offlineState(article)} size={Math.min(20, Math.max(16, width * 0.12))} />
           </View>
-        )}
-        {article.status === 'partial' && <View style={styles.partial} accessibilityLabel="images still downloading" />}
+        ) : null}
       </View>
     </View>
   );
@@ -64,15 +62,25 @@ function TypeCover({
   article,
   palette,
   drawOn,
+  width,
 }: {
   article: Article;
   palette: ReturnType<typeof paletteFor>;
   drawOn: boolean;
+  width: number;
 }) {
+  // Thumbnail size (list rows, search, offline): no room for type, just the doodle.
+  if (width < 60) {
+    return (
+      <View style={styles.typeCoverSmall}>
+        <Doodle doodle={doodleAt(article.doodle)} size={Math.round(width * 0.55)} color={palette.ink} strokeWidth={1.6} />
+      </View>
+    );
+  }
   return (
     <View style={styles.typeCover}>
       <T variant="monoXs" color={palette.muted} numberOfLines={1}>
-        {(article.site ?? '').toLowerCase()}
+        {siteLabel(article).toLowerCase()}
       </T>
       <T variant="italicDek" color={palette.ink} numberOfLines={5} style={styles.typeTitle}>
         {article.title}
@@ -125,28 +133,10 @@ const styles = StyleSheet.create({
     experimental_backgroundImage:
       'linear-gradient(135deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 45%, rgba(0,0,0,0.06) 100%)',
   },
+  typeCoverSmall: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   typeCover: { flex: 1, paddingLeft: 18, paddingRight: 12, paddingTop: 14, paddingBottom: 12 },
   typeTitle: { marginTop: 10 },
   typeFoot: { flex: 1, justifyContent: 'flex-end' },
   ribbon: { position: 'absolute', top: 0, right: 12 },
-  badge: {
-    position: 'absolute',
-    left: 14,
-    bottom: 10,
-    backgroundColor: 'rgba(17,17,20,0.72)',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  partial: {
-    position: 'absolute',
-    right: 8,
-    bottom: 8,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-    backgroundColor: 'rgba(24,0,204,0.6)',
-  },
+  badgeCorner: { position: 'absolute', right: 8, bottom: 8 },
 });

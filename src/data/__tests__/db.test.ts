@@ -27,8 +27,9 @@ describe('migrate', () => {
   it('brings a fresh database to the latest version', () => {
     const db = fakeDb();
     migrate(db);
-    expect(db.version()).toBe(1);
+    expect(db.version()).toBe(2);
     expect(db.executed.some((s) => s.includes('CREATE TABLE articles'))).toBe(true);
+    expect(db.executed.some((s) => s.includes('USING fts5'))).toBe(true);
   });
 
   it('is a no-op when already migrated', () => {

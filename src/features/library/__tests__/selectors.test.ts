@@ -1,4 +1,4 @@
-import type { Article } from '../../../data/article';
+import { siteLabel, type Article } from '../../../data/article';
 import { flightCopy, flightStatus, groupLibrary, relativeSaved, rowMeta, shelfDots } from '../selectors';
 
 // Local-time dates so month boundaries don't depend on the machine's timezone.
@@ -27,6 +27,8 @@ function article(id: string, over: Partial<Article> = {}): Article {
     hasThumb: false,
     retryAttempts: 0,
     nextRetryAt: null,
+    keepOffline: true,
+    sizeBytes: 0,
     updatedAt: 0,
     ...over,
   };
@@ -102,5 +104,13 @@ describe('row meta', () => {
   it('omits minutes for link-only items and falls back to host', () => {
     expect(rowMeta(article('x', { status: 'link_only', site: null }), now)).toBe('example.com · saved just now');
     expect(rowMeta(article('y'), now)).toBe('example.com · 5 min · saved just now');
+  });
+});
+
+describe('siteLabel', () => {
+  it('keeps short publisher names and falls back to the domain for legal names', () => {
+    expect(siteLabel({ site: 'The Verge', url: 'https://www.theverge.com/x' })).toBe('The Verge');
+    expect(siteLabel({ site: 'Wikimedia Foundation, Inc.', url: 'https://en.m.wikipedia.org/wiki/Reading' })).toBe('wikipedia.org');
+    expect(siteLabel({ site: null, url: 'https://www.example.co/a' })).toBe('example.co');
   });
 });

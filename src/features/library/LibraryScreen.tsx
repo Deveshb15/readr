@@ -2,14 +2,12 @@ import { FlashList } from '@shopify/flash-list';
 import { router } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect } from 'react-native-svg';
 
 import type { Article } from '../../data/article';
 import { repo } from '../../data/db';
 import { useLibraryStore } from '../../data/libraryStore';
-import { DateChip } from '../../design/components/DateChip';
 import { EmptyState } from '../../design/components/EmptyState';
 import { PillToggle } from '../../design/components/PillToggle';
 import { Wordmark } from '../../design/components/Wordmark';
@@ -20,8 +18,8 @@ import { removeArticle } from '../../sync';
 import { useIsOffline } from '../../sync/connectivity';
 import { ArticleRow } from './ArticleRow';
 import { toShelves } from './coverStyle';
-import { FlightStatus } from './FlightStatus';
-import { flightStatus, groupLibrary } from './selectors';
+import { ContinueCard, OfflineChip, OfflineNotice, SearchField } from './LibraryHeader';
+import { continueReading, groupLibrary } from './selectors';
 import { ShelfRow } from './ShelfRow';
 import { SwipeableRow } from './SwipeableRow';
 
@@ -48,7 +46,8 @@ export function LibraryScreen() {
   const bookWidth = Math.floor((width - (inset.list + 8) * 2 - 28) / 2) - 4;
 
   const { unread, read } = useMemo(() => groupLibrary(articles), [articles]);
-  const status = useMemo(() => flightStatus(articles), [articles]);
+  const lastOpened = useLibraryStore((s) => s.lastOpenedId);
+  const resume = useMemo(() => continueReading(articles, lastOpened), [articles, lastOpened]);
 
   const items = useMemo<Item[]>(() => {
     const out: Item[] = [];
@@ -149,15 +148,10 @@ export function LibraryScreen() {
           />
         </View>
       </View>
-      {offline && (
-        <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.offline}>
-          <DateChip label="offline" />
-          <T variant="monoXs" color={colors.textMuted}>
-            no signal. everything here still works.
-          </T>
-        </Animated.View>
-      )}
-      <FlightStatus status={status} />
+      <SearchField />
+      <OfflineChip articles={articles} offline={offline} />
+      {offline && <OfflineNotice />}
+      {resume && <ContinueCard article={resume} />}
     </View>
   );
 
@@ -200,7 +194,6 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: inset.list, paddingBottom: space.x2, gap: space.x4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   toggle: { width: 112 },
-  offline: { flexDirection: 'row', alignItems: 'center', gap: space.x2 },
   section: {
     flexDirection: 'row',
     alignItems: 'baseline',

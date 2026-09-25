@@ -3,6 +3,7 @@ import { openDatabaseSync, type SQLiteDatabase } from 'expo-sqlite';
 import type { Article } from './article';
 import { migrate } from './migrations';
 import type { ArticleRepo } from './repo';
+import { SNIPPET_CLOSE, SNIPPET_OPEN, toFtsQuery, type SearchHit } from './search';
 
 // App-private database. Only the app writes it; the extension never opens it
 // (no cross-process locks, no 0xdead10cc on suspension).
@@ -29,6 +30,8 @@ type Row = {
   has_thumb: number;
   retry_attempts: number;
   next_retry_at: number | null;
+  keep_offline: number;
+  size_bytes: number;
   updated_at: number;
 };
 
@@ -53,6 +56,8 @@ const COLUMNS: Record<keyof Omit<Article, 'id'>, keyof Row> = {
   hasThumb: 'has_thumb',
   retryAttempts: 'retry_attempts',
   nextRetryAt: 'next_retry_at',
+  keepOffline: 'keep_offline',
+  sizeBytes: 'size_bytes',
   updatedAt: 'updated_at',
 };
 
@@ -79,6 +84,8 @@ function fromRow(r: Row): Article {
     hasThumb: r.has_thumb === 1,
     retryAttempts: r.retry_attempts,
     nextRetryAt: r.next_retry_at,
+    keepOffline: r.keep_offline !== 0,
+    sizeBytes: r.size_bytes,
     updatedAt: r.updated_at,
   };
 }
@@ -104,6 +111,7 @@ export function sqliteRepo(db: SQLiteDatabase): ArticleRepo {
     },
     remove: (id) => {
       db.runSync('DELETE FROM articles WHERE id = ?', id);
+      db.runSync('DELETE FROM article_fts WHERE id = ?', id);
     },
     patch: (id, fields) => {
       const entries = Object.entries(fields) as [keyof typeof COLUMNS, unknown][];
@@ -136,6 +144,32 @@ export function sqliteRepo(db: SQLiteDatabase): ArticleRepo {
     getSetting: (key) => db.getFirstSync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key)?.value ?? null,
     setSetting: (key, value) => {
       db.runSync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', key, value);
+    },
+    indexText: (id, title, site, body) => {
+      db.withTransactionSync(() => {
+        db.runSync('DELETE FROM article_fts WHERE id = ?', id);
+        db.runSync('INSERT INTO article_fts (id, title, site, body) VALUES (?, ?, ?, ?)', id, title, site, body);
+      });
+    },
+    indexedIds: () => db.getAllSync<{ id: string }>('SELECT id FROM article_fts').map((r) => r.id),
+    search: (input, limit = 50) => {
+      const q = toFtsQuery(input);
+      if (!q) return [];
+      try {
+        // Title hits weigh most, then site, then body (bm25 column weights).
+        return db.getAllSync<SearchHit>(
+          `SELECT id,
+                  highlight(article_fts, 1, ?, ?) AS title,
+                  snippet(article_fts, 3, ?, ?, '…', 14) AS snippet
+             FROM article_fts
+            WHERE article_fts MATCH ?
+            ORDER BY bm25(article_fts, 0, 10, 3, 1)
+            LIMIT ?`,
+          SNIPPET_OPEN, SNIPPET_CLOSE, SNIPPET_OPEN, SNIPPET_CLOSE, q, limit,
+        );
+      } catch {
+        return [];
+      }
     },
   };
 }

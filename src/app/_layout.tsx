@@ -58,9 +58,11 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="article/[id]" />
+          <Stack.Screen name="search" options={{ animation: 'fade', animationDuration: 180 }} />
+          <Stack.Screen name="offline" />
           <Stack.Screen
             name="reader-settings"
-            options={{ presentation: 'formSheet', sheetAllowedDetents: [0.52], sheetGrabberVisible: true, sheetCornerRadius: 32 }}
+            options={{ presentation: 'formSheet', sheetAllowedDetents: [0.8], sheetGrabberVisible: true, sheetCornerRadius: 32 }}
           />
           <Stack.Screen name="onboarding" options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
         </Stack>

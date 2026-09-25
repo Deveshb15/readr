@@ -14,6 +14,7 @@ export function buildQueue(articles: Article[], now: number): Article[] {
   const due = articles.filter(
     (a) =>
       a.status !== 'ready' &&
+      a.keepOffline &&
       a.retryAttempts < MAX_RETRY_ATTEMPTS &&
       (a.nextRetryAt === null || a.nextRetryAt <= now),
   );

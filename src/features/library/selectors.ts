@@ -1,4 +1,4 @@
-import type { Article } from '../../data/article';
+import { siteLabel, type Article } from '../../data/article';
 
 export type LibraryGroups = { unread: Article[]; read: Article[] };
 
@@ -64,13 +64,16 @@ export function relativeSaved(savedAt: number, now: number): string {
 }
 
 export function rowMeta(a: Article, now: number): string {
-  const parts = [a.site ?? hostOf(a.url)];
+  const parts = [siteLabel(a)];
   if (a.status !== 'link_only') parts.push(`${a.minutes} min`);
   parts.push(relativeSaved(a.savedAt, now));
   return parts.filter(Boolean).join(' · ');
 }
 
-function hostOf(url: string): string {
-  const m = /^https?:\/\/(?:www\.)?([^/?#:]+)/i.exec(url);
-  return m ? m[1] : url;
+/** The article to resume: the last one opened, if it's partway through and unread. */
+export function continueReading(articles: Article[], lastOpenedId: string | null): Article | null {
+  if (!lastOpenedId) return null;
+  const a = articles.find((x) => x.id === lastOpenedId);
+  if (!a || a.readAt !== null || a.status === 'link_only') return null;
+  return a.progress > 0.01 && a.progress < 0.97 ? a : null;
 }

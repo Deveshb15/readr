@@ -8,7 +8,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 
-import type { Article } from '../../data/article';
+import { siteLabel, type Article } from '../../data/article';
 import { haptic } from '../../design/haptics';
 import { springs, useMotionMode } from '../../design/motion';
 import { colors } from '../../design/tokens';
@@ -81,7 +81,7 @@ export const BookTile = memo(
           pressed.value = withSpring(0, springs.settle);
         }}
         accessibilityRole="button"
-        accessibilityLabel={`${article.title}. ${article.site ?? ''}${article.readAt === null ? '. unread' : ''}`}
+        accessibilityLabel={`${article.title}. ${siteLabel(article)}${article.readAt === null ? '. unread' : ''}`}
         accessibilityHint="opens the article. long press for more."
       >
         <View style={{ height: coverHeight + 3, justifyContent: 'flex-end' }}>
@@ -105,7 +105,7 @@ export const BookTile = memo(
 
 /** Title + meta sit below the shelf plank, not on it. */
 export function BookCaption({ article, width }: { article: Article; width: number }) {
-  const meta = [article.site, article.status === 'link_only' ? null : `${article.minutes} min`].filter(Boolean).join(' · ');
+  const meta = [siteLabel(article), article.status === 'link_only' ? null : `${article.minutes} min`].filter(Boolean).join(' · ');
   return (
     <View style={{ width: width + 4, gap: 4 }}>
       <T variant="rowTitle" numberOfLines={2} style={styles.title}>

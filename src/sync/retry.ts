@@ -7,6 +7,7 @@ import { groupFs, groupPaths } from '../data/sharedContainer';
 import { invalidateReader } from '../features/reader/prepareReader';
 import { isOnlineNow, subscribeOnline } from './connectivity';
 import { extractInWebView } from './ExtractorHost';
+import { indexArticle, refreshSize } from './offline';
 import { runRetryQueue, type RetryDeps } from './retryRunner';
 
 const USER_AGENT =
@@ -40,6 +41,8 @@ function deps(): RetryDeps {
     extract: extractInWebView,
     downloadImage: async (id, src, file) => {
       const dest = groupPaths.articleFile(id, file);
+      // images/ is gone after "remove from offline"; recreate it before downloading.
+      dest.parentDirectory.create({ intermediates: true, idempotent: true });
       if (dest.exists) dest.delete();
       await File.downloadFileAsync(src, dest);
       return dest.exists;
@@ -53,7 +56,12 @@ function deps(): RetryDeps {
       new File(saved.uri).moveSync(thumb);
       return true;
     },
-    onArticleChanged: () => useLibraryStore.getState().refresh(r),
+    onArticleChanged: (id) => {
+      refreshSize(groupFs, r, id);
+      const a = r.get(id);
+      if (a) indexArticle(groupFs, r, a);
+      useLibraryStore.getState().refresh(r);
+    },
   };
 }
 

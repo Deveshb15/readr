@@ -7,7 +7,7 @@ import { ensureDirectory, groupPaths } from '../data/sharedContainer';
 import { sampleHtml, sampleMeta } from './sample';
 
 // Bump when reader assets or the sample change.
-export const SEED_VERSION = '2';
+export const SEED_VERSION = '5';
 
 const READER_FONTS = {
   'Newsreader-Variable.ttf': require('../../assets/reader/fonts/Newsreader-Variable.ttf'),

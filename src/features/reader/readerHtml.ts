@@ -1,7 +1,9 @@
 // Builds articles/<id>/reader.html once per template version. Reader settings are
 // applied later via CSS variables (window.readr.apply), never by rewriting the file.
 
-export const TEMPLATE_VERSION = 2;
+import { htmlToText } from '../../data/search';
+
+export const TEMPLATE_VERSION = 5;
 export const TEMPLATE_MARKER = `<!-- readr-template:${TEMPLATE_VERSION} -->`;
 
 /** Relative from articles/<id>/reader.html to the seeded reader-assets folder. */
@@ -63,17 +65,71 @@ const BRIDGE = `
   window.readr = {
     apply: function(vars){ for (var k in vars) document.documentElement.style.setProperty(k, vars[k]); measure(); },
     scrollTo: function(y){ window.scrollTo(0, y); measure(); },
-    fin: function(){ var f = document.querySelector('.fin'); if (f) f.classList.add('shown'); }
+    fin: function(){ var f = document.querySelector('.fin'); if (f) f.classList.add('shown'); },
+    // Search → reader: wrap matches in <mark class="hit"> and bring the first into view.
+    highlight: function(terms){
+      if (!terms || !terms.length) return 0;
+      // Terms come from queryTerms(): letters and digits only, so no regex escaping is needed.
+      var esc = terms;
+      var re = new RegExp('(' + esc.join('|') + ')', 'gi');
+      var root = document.querySelector('main');
+      var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+      var nodes = [], n;
+      while ((n = walker.nextNode())) { if (re.test(n.nodeValue)) nodes.push(n); re.lastIndex = 0; }
+      var first = null, count = 0;
+      nodes.forEach(function(node){
+        var frag = document.createDocumentFragment(), text = node.nodeValue, last = 0, m;
+        re.lastIndex = 0;
+        while ((m = re.exec(text))) {
+          frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+          var mark = document.createElement('mark'); mark.className = 'hit'; mark.textContent = m[0];
+          frag.appendChild(mark); if (!first) first = mark; count++; last = m.index + m[0].length;
+        }
+        frag.appendChild(document.createTextNode(text.slice(last)));
+        node.parentNode.replaceChild(frag, node);
+      });
+      if (first) {
+        first.classList.add('first');
+        var y = first.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.35;
+        window.scrollTo(0, Math.max(0, y)); measure();
+      }
+      return count;
+    }
   };
   window.addEventListener('load', function(){ post({ type: 'ready' }); measure(); });
 })();
 `;
 
+const CITATION = /\s*\[[^\]]{1,12}\]/g;
+const normalize = (s: string) =>
+  s.toLowerCase().replace(CITATION, '').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+
+/**
+ * The description line under the title, or null when it would just repeat the opening
+ * paragraph (many sites use their first paragraph as the description).
+ */
+export function dekFor(excerpt: string | null, bodyHtml: string): string | null {
+  if (!excerpt) return null;
+  const dek = excerpt.replace(CITATION, '').trim();
+  const probe = normalize(dek).slice(0, 80);
+  if (!probe) return null;
+  return normalize(htmlToText(bodyHtml.slice(0, 6000))).includes(probe) ? null : dek;
+}
+
+/** "by Ada Lin", unless the byline just repeats the site or is too long to read at a glance. */
+export function bylineFor(byline: string | null, site: string | null): string | null {
+  const b = byline?.trim();
+  if (!b || b.length > 60 || (site && normalize(b) === normalize(site))) return null;
+  return /^by\s/i.test(b) ? b : `by ${b}`;
+}
+
 export function buildReaderHtml(doc: ReaderDoc, initialVars: Record<string, string> = {}): string {
-  const meta = [doc.site, doc.byline, doc.minutes > 0 ? `${doc.minutes} min` : null]
+  const kicker = [doc.site, doc.minutes > 0 ? `${doc.minutes} min read` : null]
     .filter(Boolean)
     .map((s) => escapeHtml(String(s)))
     .join(' · ');
+  const dek = dekFor(doc.excerpt, doc.bodyHtml);
+  const byline = bylineFor(doc.byline, doc.site);
   const vars = Object.entries(initialVars)
     .map(([k, v]) => `${k}:${v}`)
     .join(';');
@@ -90,9 +146,11 @@ export function buildReaderHtml(doc: ReaderDoc, initialVars: Record<string, stri
 <body>
 <main>
 <header class="article-head">
-${meta ? `<p class="byline">${meta}</p>` : ''}
+${kicker ? `<p class="kicker">${kicker}</p>` : ''}
 <h1 class="title">${escapeHtml(doc.title)}</h1>
-${doc.excerpt ? `<p class="dek">${escapeHtml(doc.excerpt)}</p>` : ''}
+${dek ? `<p class="dek">${escapeHtml(dek)}</p>` : ''}
+${byline ? `<p class="byline">${escapeHtml(byline)}</p>` : ''}
+<hr class="head-rule">
 </header>
 <article>
 ${doc.bodyHtml}

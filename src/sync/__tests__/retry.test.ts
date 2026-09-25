@@ -32,6 +32,8 @@ function article(n: number, over: Partial<Article> = {}): Article {
     hasThumb: false,
     retryAttempts: 0,
     nextRetryAt: null,
+    keepOffline: true,
+    sizeBytes: 0,
     updatedAt: 0,
     ...over,
   };

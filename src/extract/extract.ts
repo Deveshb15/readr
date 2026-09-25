@@ -109,6 +109,26 @@ function countWords(text: string): number {
   return words[0] === '' ? 0 : words.length;
 }
 
+const squash = (s: string) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+
+/**
+ * Drops a trailing site name ("Reading - Wikipedia", "Title | The Verge") when the suffix
+ * matches the site name or the page's domain. Readability keeps it on short titles.
+ */
+export function cleanTitle(title: string, siteName: string | null, pageUrl: string): string {
+  const m = /^(.{2,}?)\s+[-|–—·:]\s+([^-|–—·:]{2,40})$/u.exec(title.trim());
+  if (!m) return title.trim();
+  const suffix = squash(m[2]);
+  let host = '';
+  try {
+    host = squash(new URL(pageUrl).hostname.replace(/^www\./, ''));
+  } catch {
+    // unparseable URL: match on the site name only
+  }
+  const matches = suffix.length >= 3 && ((siteName && squash(siteName) === suffix) || host.includes(suffix));
+  return matches ? m[1].trim() : title.trim();
+}
+
 export function extract(doc: Document, pageUrl: string): ExtractResult {
   const base = doc.baseURI && doc.baseURI !== 'about:blank' ? doc.baseURI : pageUrl;
   const canonicalHref = doc.querySelector('link[rel="canonical"]')?.getAttribute('href');
@@ -140,13 +160,14 @@ export function extract(doc: Document, pageUrl: string): ExtractResult {
     const images = localizeImages(container);
 
     const wordCount = countWords(text);
+    const siteName = article.siteName?.trim() || meta(doc, 'meta[property="og:site_name"]');
     return {
       ok: true,
       url: pageUrl,
       canonical,
-      title: (article.title || fallbackTitle || '').trim(),
+      title: cleanTitle(article.title || fallbackTitle || '', siteName, pageUrl),
       byline: article.byline?.trim() || meta(doc, 'meta[name="author"]'),
-      siteName: article.siteName?.trim() || meta(doc, 'meta[property="og:site_name"]'),
+      siteName,
       excerpt: article.excerpt?.trim() || null,
       lang: article.lang || doc.documentElement.getAttribute('lang'),
       html: container.innerHTML,

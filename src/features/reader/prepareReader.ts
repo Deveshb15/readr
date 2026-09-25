@@ -1,4 +1,4 @@
-import type { Article } from '../../data/article';
+import { siteLabel, type Article } from '../../data/article';
 import { groupPaths } from '../../data/sharedContainer';
 import { buildReaderHtml, isCurrentTemplate } from './readerHtml';
 
@@ -19,7 +19,7 @@ export function prepareReader(article: Article): Prepared {
       buildReaderHtml({
         title: article.title,
         byline: article.byline,
-        site: article.site,
+        site: siteLabel(article),
         minutes: article.minutes,
         excerpt: article.excerpt,
         lang: null,

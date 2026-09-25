@@ -18,6 +18,12 @@ export interface GroupFs {
   readMeta(id: string): string | null;
   writeMeta(id: string, json: string): void;
   removeArticle(id: string): void;
+  /** Saved article HTML (for the search index); null when not downloaded. */
+  readContent(id: string): string | null;
+  /** Deletes the offline copy (text + images) but keeps meta.json and the cover thumbnail. */
+  removeOfflineFiles(id: string): void;
+  /** Bytes used by the article folder. */
+  articleSize(id: string): number;
 }
 
 let warned = false;
@@ -95,6 +101,22 @@ export const groupFs: GroupFs = {
   removeArticle(id) {
     const d = groupPaths.article(id);
     if (d.exists) d.delete();
+  },
+  readContent(id) {
+    const f = groupPaths.articleFile(id, 'content.html');
+    return f.exists ? f.textSync() : null;
+  },
+  removeOfflineFiles(id) {
+    for (const name of ['content.html', 'reader.html']) {
+      const f = groupPaths.articleFile(id, name);
+      if (f.exists) f.delete();
+    }
+    const images = new Directory(groupRoot(), 'articles', id, 'images');
+    if (images.exists) images.delete();
+  },
+  articleSize(id) {
+    const d = groupPaths.article(id);
+    return d.exists ? (d.size ?? 0) : 0;
   },
 };
 
