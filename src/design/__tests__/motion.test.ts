@@ -1,5 +1,8 @@
 import { motionPreset } from '../motion';
 
+// jest.mock is hoisted above the import by babel-jest.
+jest.mock('react-native-reanimated', () => ({ useReducedMotion: () => false }));
+
 describe('motionPreset', () => {
   it('is opacity-only under Reduce Motion', () => {
     expect(motionPreset('reduced')).toMatchObject({ transform: false, drawOn: false, zoom: false });
