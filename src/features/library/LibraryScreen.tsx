@@ -128,12 +128,7 @@ export function LibraryScreen() {
   const header = (
     <View style={[styles.header, { paddingTop: insets.top + space.x4 }]}>
       <View style={styles.titleRow}>
-        <View>
-          <Wordmark />
-          <T variant="monoXs" color={colors.textMuted}>
-            {articles.length} saved · {unread.length} to read
-          </T>
-        </View>
+        <Wordmark size={38} />
         <View style={styles.toggle}>
           <PillToggle<ViewMode>
             value={mode}

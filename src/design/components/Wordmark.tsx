@@ -12,7 +12,7 @@ const AnimatedPath = Animated.createAnimatedComponent(Path);
 const UNDERLINE = 'M2 6 C 22 3.5, 62 7.5, 94 4.5';
 const UNDERLINE_LENGTH = 96;
 
-/** "Readr": ink R (like the icon's cover letter) + serif italic "eadr", underlined by a drawn shelf. */
+/** "Readr" in serif italic, one colour; optionally underlined by the drawn shelf stroke (splash, letter). */
 export function Wordmark({ size = 34, underline = true }: { size?: number; underline?: boolean }) {
   const mode = useMotionMode();
   const progress = useSharedValue(mode === 'full' ? 0 : 1);
@@ -27,7 +27,7 @@ export function Wordmark({ size = 34, underline = true }: { size?: number; under
   return (
     <View accessibilityRole="header" accessibilityLabel="Readr">
       <Text style={{ fontFamily: fonts.serifItalic, fontSize: size, lineHeight: size * 1.08, color: colors.text }}>
-        <Text style={{ color: colors.ink }}>R</Text>eadr
+        Readr
       </Text>
       {underline && (
         <Svg width={width} height={size * 0.26} viewBox="0 0 96 9" style={{ marginTop: -size * 0.06 }}>
