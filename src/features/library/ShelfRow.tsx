@@ -12,7 +12,7 @@ type Props = {
   onArrived: (id: string) => void;
 };
 
-/** Two books standing on a shelf plank, captions below the plank. */
+/** Two books side by side, captions below. */
 export const ShelfRow = memo(function ShelfRow({ books, bookWidth, arrivals, onArrived }: Props) {
   return (
     <View style={styles.row}>
@@ -28,10 +28,6 @@ export const ShelfRow = memo(function ShelfRow({ books, bookWidth, arrivals, onA
           />
         ))}
       </View>
-      <View style={styles.plank}>
-        <View style={styles.plankTop} />
-        <View style={styles.plankEdge} />
-      </View>
       <View style={styles.captions}>
         {books.map((a) => (
           <BookCaption key={a.id} article={a} width={bookWidth} />
@@ -44,20 +40,10 @@ export const ShelfRow = memo(function ShelfRow({ books, bookWidth, arrivals, onA
 const styles = StyleSheet.create({
   row: { paddingTop: space.x6, paddingBottom: space.x5 },
   books: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: inset.list + 8, zIndex: 1 },
-  plank: { marginHorizontal: inset.list - 6, marginTop: -2 },
-  // Shelf surface catching light, then the front edge with a soft shadow beneath.
-  plankTop: { height: 6, backgroundColor: '#E9E9EC', borderTopLeftRadius: 3, borderTopRightRadius: 3 },
-  plankEdge: {
-    height: 5,
-    backgroundColor: '#C9C9CF',
-    borderBottomLeftRadius: 3,
-    borderBottomRightRadius: 3,
-    boxShadow: '0 8px 14px -6px rgba(20,10,80,0.22)',
-  },
   captions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: inset.list + 8,
-    marginTop: space.x3,
+    marginTop: space.x4,
   },
 });

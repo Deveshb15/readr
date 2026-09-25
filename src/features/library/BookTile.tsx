@@ -85,7 +85,7 @@ export const BookTile = memo(
         accessibilityHint="opens the article. long press for more."
       >
         <View style={{ height: coverHeight + 3, justifyContent: 'flex-end' }}>
-          {/* Contact shadow on the shelf, under the book. */}
+          {/* Soft contact shadow under the book. */}
           <Animated.View style={[styles.contact, { width: width * 0.86 }, shadowStyle]} />
           <Animated.View style={[styles.book, bookStyle]}>
             <BookCover article={article} width={width} drawOn={isNew} />
@@ -103,7 +103,7 @@ export const BookTile = memo(
     a.column === b.column,
 );
 
-/** Title + meta sit below the shelf plank, not on it. */
+/** Title + meta below the book. */
 export function BookCaption({ article, width }: { article: Article; width: number }) {
   const meta = [siteLabel(article), article.status === 'link_only' ? null : `${article.minutes} min`].filter(Boolean).join(' · ');
   return (
